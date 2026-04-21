@@ -8,6 +8,9 @@
     "dark": "#144980"
   },
   "favicon": "/favicon.png",
+  "icons": {
+    "library": "lucide"
+  },
   "navigation": {
     "tabs": [
       {
@@ -59,7 +62,8 @@
             "pages": [
               "integrations/work-api",
               "integrations/agent-api",
-              "integrations/openapi-x402"
+              "integrations/openapi-x402",
+              "integrations/mcp-server"
             ]
           }
         ]
