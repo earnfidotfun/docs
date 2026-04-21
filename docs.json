@@ -58,7 +58,8 @@
             "group": "APIs",
             "pages": [
               "integrations/work-api",
-              "integrations/agent-api"
+              "integrations/agent-api",
+              "integrations/openapi-x402"
             ]
           }
         ]
