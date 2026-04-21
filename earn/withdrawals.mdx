@@ -1,23 +1,49 @@
 ---
 title: "Withdrawals"
-description: "Withdraw your available balance and track your withdrawal history."
+description: "Withdraw USDC on Solana to your wallet. Limits and rules are shown on the Withdraw page."
 ---
 
-## Withdraw your balance
+## Asset & network
 
-Open **Earnings & Withdrawals** and select **Withdraw** to start a withdrawal from your available balance.
+Withdrawals from EarnFi are sent as **USDC on the Solana network**. Make sure the **destination address** you enter is a **Solana wallet** that can receive USDC (typically your linked wallet or another address you control).
+
+## Where to see the rules
+
+Every account follows the **current withdrawal policy** shown directly in the app. Open **Earnings → Withdraw** to see live values for:
+
+- **Minimum** withdrawal amount  
+- **Maximum** per request  
+- **Auto-processing threshold** (larger amounts may go through additional review with a stated time estimate)  
+- **Daily withdrawal count** versus your daily limit  
+- **Network / processing notes** (for example timing expectations shown beside the form)  
+
+The Withdraw page is the **source of truth**—policy values can change, so this documentation does not quote fixed numbers.
+
+## Before you withdraw
+
+- Confirm you are withdrawing to the **correct Solana USDC address**.  
+- Large requests may show **manual review** messaging with an estimated processing window.  
+- If your wallet has never received USDC before, the app may show a **one-time token account creation** cost (displayed in the Withdraw UI) that is deducted from the payout.  
 
 ## Withdrawal history
 
-Use **Withdrawal history** to review past withdrawals and their status.
+Use **Withdrawal history** to track status for past requests.
 
-## Verification requirements
+## X connection
 
-In some cases, withdrawals may require **X verification** before you can proceed. If you’re redirected to verification, complete it and return to withdraw.
+Connecting **X** is required to **earn from many jobs**, but it is **not** a blocker for **withdrawing referral earnings**. If the app ever asks you to complete an extra step before cashing out, follow the on-screen message—it reflects your account’s current eligibility.
 
 ## If Withdraw is unavailable
 
-Withdraw can be unavailable if:
+Withdraw may be disabled when:
 
-- Your account is **restricted**
-- Your account is **temporarily muted** (until the mute period ends)
+- Your account is **restricted**  
+- Your account is **temporarily muted** until the mute expires  
+- You are below the **minimum** or above the **maximum** for a single request (see the Withdraw page)  
+- You have reached your **daily withdrawal count**  
+
+## Related
+
+- [Earnings](/earn/earnings)  
+- [X connection](/safety/x-verification)  
+- [Referrals](/earn/referrals)  

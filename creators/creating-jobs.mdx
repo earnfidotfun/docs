@@ -1,0 +1,76 @@
+---
+title: "Creating jobs & platform rules"
+description: "How job creation works on EarnFi: fees, locks, manual review windows, contests, and fair expectations for creators."
+---
+
+## What creators pay in
+
+EarnFi job budgets are priced in **USDC on Solana**. When you fund work, you’ll see a clear checkout-style summary in the creator flow.
+
+## Platform fee
+
+When you create or **expand** a job (add more participants), the app shows:
+
+- **Participant rewards** × **slots** (subtotal paid to earners)  
+- **Platform fee** as a percentage of that subtotal (shown live in the job builder)  
+- **Total** charged to your creator wallet balance  
+
+The fee funds platform operations and ecosystem features (for example token mechanics surfaced elsewhere in the product).
+
+## Job creation flow (high level)
+
+1. Choose a **job type** (social, video, manual, or contest).  
+2. Set **reward per participant**, **number of participants**, and any **requirements** (watch %, lock duration, manual instructions, etc.).  
+3. Preview **content** when the type supports it (for example social targets or video metadata).  
+4. Review the **cost summary** (rewards + platform fee).  
+5. **Fund** from your connected wallet balance.  
+
+Manual jobs and contests may add extra fields (instructions, attachments guidance, winner settings). The live form is always authoritative.
+
+## Lock periods (social jobs)
+
+For many **social** job types, you choose how long rewards stay **locked** after a successful verification. **Manual** jobs and **video** jobs use a **zero-hour lock** in the standard configuration—the creator UI explains what applies to the type you picked.
+
+**Follow** jobs measure follow duration differently (hours/days family). Use the limits shown in the job builder.
+
+## Manual verification and your responsibility
+
+Manual jobs create a **review queue** for you:
+
+- Approve good submissions quickly.  
+- Reject with a **clear reason** when proof does not match the instructions.  
+
+Each manual job is configured with an **automatic finalization window**: if you do not approve or reject in time, the platform may **finalize pending submissions automatically** so participants are not stuck indefinitely. The app communicates timing through notifications and verification screens.
+
+If you reject someone, they may have a **short dispute window** to respond with evidence—treat rejections as factual and specific.
+
+## Contests: winners and fairness
+
+When you create a contest you choose:
+
+- **How many winners**  
+- **Winner selection**: **Manual** (you pick) or **Random**  
+- **Prize mode**: **tiered** prizes or **equal** prizes  
+
+If you choose **manual selection**, you must pick winners within the **time window shown in the contest setup** after the contest deadline. If you do not, the platform **selects winners automatically** so the contest can close and payouts can proceed.
+
+## Video jobs: watch percentage and minimum reward
+
+Video jobs require a **minimum watch percentage** (configured per job). Participants must watch at least that much of the video to complete.
+
+In the creator builder, **longer videos** and **higher watch requirements** can increase the **suggested minimum reward** for the job. The UI guides you so the offer stays fair for the time and attention required.
+
+## Disputes
+
+Both creators and earners can end up in **disputes** when outcomes are contested. Keep communication in the dispute thread professional, cite the original job requirements, and upload **clear image evidence** when attachments are needed.
+
+## Automation at scale
+
+If you operate jobs programmatically, use the **[Work API](https://app.earnfi.fun/work-api)** explorer for authenticated automation and **[Agent API](https://app.earnfi.fun/agent-api)** for agent-centric flows.
+
+## Related
+
+- [Creator hub overview](/creators/overview)  
+- [Manage jobs](/creators/jobs)  
+- [Verifications](/creators/verifications)  
+- [Disputes](/creators/disputes)  

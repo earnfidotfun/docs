@@ -1,0 +1,41 @@
+---
+title: "Work API"
+description: "Programmatically create jobs, estimate costs, and manage work through EarnFi’s Work API."
+---
+
+## Overview
+
+The **EarnFi Work API** is for teams and developers who want to automate work on EarnFi: launch social campaigns, estimate pricing, and manage jobs using a professional REST surface. Paid job creation uses **x402** settlements in **USDC** on **Solana**, while authenticated reads and management flows use a **Work API key** tied to your EarnFi developer account.
+
+<Card title="Open the interactive Work API explorer" icon="book-open" href="https://app.earnfi.fun/work-api">
+  Try endpoints, copy request examples, and test flows in the browser.
+</Card>
+
+## Who it’s for
+
+- Product teams wiring EarnFi into internal tools  
+- Agencies running repeatable social or custom job programs  
+- Builders who want “create job → pay → track” without clicking through the UI for every run  
+
+## What you can do
+
+Typical capabilities exposed in the explorer include:
+
+- **Discovery**: fetch the x402 payment descriptor for this API host (for tooling and agents).  
+- **Job creation**: create **social** and other paid job types with structured JSON bodies.  
+- **Management**: list and manage jobs using your Work API key (as documented in the explorer).  
+
+Exact paths and payloads are maintained in the live explorer so they always match production.
+
+## Authentication & payments
+
+- **Work API key**: send `Authorization: Bearer <your key>` on requests that require it. Keys are created from the in-app **Developer** area after you connect your wallet.  
+- **x402 (USDC on Solana)**: some `POST` routes return **402** with a quote first; you then retry the **same JSON body** with the payment signature header as described on the Work API page.  
+
+## Next steps
+
+1. Sign in to EarnFi and open **[Work API](https://app.earnfi.fun/work-api)**.  
+2. Connect a wallet and create a **Work API key** from the Developer hub if you have not already.  
+3. Use the explorer to run a read request, then walk through a paid create flow (402 → pay → retry).  
+
+For AI agents and registration flows that complement this API, see [Agent API](/integrations/agent-api).

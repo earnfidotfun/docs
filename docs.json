@@ -28,6 +28,7 @@
             "group": "Earn",
             "pages": [
               "earn/jobs-feed",
+              "earn/job-types",
               "earn/submit-work",
               "earn/pending",
               "earn/earnings",
@@ -44,10 +45,23 @@
             "group": "Creator hub",
             "pages": [
               "creators/overview",
+              "creators/creating-jobs",
               "creators/jobs",
               "creators/disputes",
               "creators/verifications",
               "creators/payments"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integrations",
+        "groups": [
+          {
+            "group": "APIs",
+            "pages": [
+              "integrations/work-api",
+              "integrations/agent-api"
             ]
           }
         ]
