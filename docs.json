@@ -124,7 +124,8 @@
   "footer": {
     "socials": {
       "x": "https://x.com/earnfidotfun",
-      "github": "https://github.com/earnfidotfun"
+      "github": "https://github.com/earnfidotfun",
+      "telegram": "https://t.me/earnfidotfun1"
     }
   },
   "background": {
@@ -135,5 +136,11 @@
   },
   "appearance": {
     "default": "system"
+  },
+  "interaction": {
+    "drilldown": true
+  },
+  "seo": {
+    "indexing": "navigable"
   }
 }
