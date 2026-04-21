@@ -1,16 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "EarnFi Docs",
+  "name": "EarnFi Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#046be9",
+    "light": "#0683c9",
+    "dark": "#144980"
   },
-  "favicon": {
-    "light": "/favicon.svg",
-    "dark": "/favicon.svg"
-  },
+  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
