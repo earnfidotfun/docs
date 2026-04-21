@@ -93,7 +93,7 @@
   },
   "logo": {
     "light": "/logo/logo-light.png",
-    "dark": "/logo/logo-light.png",
+    "dark": "/logo/logo-dark.png",
     "href": "https://earnfi.fun"
   },
   "navbar": {
