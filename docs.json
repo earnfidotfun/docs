@@ -7,7 +7,7 @@
     "light": "#0683c9",
     "dark": "#144980"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -92,8 +92,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/logo/logo-light.png",
+    "dark": "/logo/logo-dark.png",
     "href": "https://earnfi.fun"
   },
   "navbar": {
