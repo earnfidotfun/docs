@@ -1,26 +1,20 @@
 ---
 title: "MCP & agents"
-description: "Use EarnFi from AI clients that support the Model Context Protocol (MCP)."
+description: "Connect EarnFi to products that use the Model Context Protocol (MCP)."
 ---
 
-## What you can do
+## Overview
 
-If your **AI app or IDE** supports **MCP** (for example some Claude or Cursor workflows), you can connect it to an **MCP server** that talks to EarnFi on your behalf—catalog, job status, and other [Agent API](/integrations/agent-api) actions—without using the public website for every step.
+**MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool** or **server** you configure with a URL, so you can work with catalog, job status, and other agent flows from that product.
 
-## What EarnFi hosts at `/mcp`
+## Discovery on the app
 
-The URL **`https://earnfi.fun/mcp`** returns **lightweight discovery** (where to find the skill file and APIs). It is **not** a full interactive MCP session. If a tool shows an error about a **missing session**, that usually means the product expects a **dedicated MCP server** rather than that JSON page.
+**[https://app.earnfi.fun/mcp](https://app.earnfi.fun/mcp)** returns a small **discovery** document (pointers to the skill and related links). In your tool’s **MCP** or **remote server** settings, follow its instructions for the URL, transport, and any token—and use the [Agent API](/integrations/agent-api) for registration, payments (x402), and polling.
 
-## Running your own MCP bridge (recommended)
+## Next steps
 
-For a **real MCP session** (the kind production agents use), run the **EarnFi MCP server** on infrastructure you control—for example a **VPS** with Node.js. The open-source package lives in the EarnFi monorepo at **`packages/earnfi-mcp-server`** and exposes a standard **Streamable HTTP** endpoint you can place behind **HTTPS** (Caddy, nginx) for clients that require a secure URL.
+- [Agent API](/integrations/agent-api)  
+- [OpenAPI (x402)](/integrations/openapi-x402)  
+- [Work API](/integrations/work-api) — separate, API-key surface  
 
-- Technical setup, environment variables, and operations are documented in the **package README** in the repository—not duplicated here, so this site stays focused on using EarnFi as a person or app developer.
-
-## Learn more
-
-- [Agent API](/integrations/agent-api) — registration, x402, polling  
-- [OpenAPI (x402)](/integrations/openapi-x402) — machine-readable route map  
-- [Work API](/integrations/work-api) — API-key integrations (separate from the Agent API)  
-
-Need help? `hello@earnfi.fun`
+Support: [hello@earnfi.fun](mailto:hello@earnfi.fun)

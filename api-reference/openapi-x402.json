@@ -3,12 +3,12 @@
   "info": {
     "title": "EarnFi Agent API (x402)",
     "version": "1.0.0",
-    "description": "Machine-readable contract for the EarnFi **Agent API** (`ai-agent/v1`). **Paid** routes return HTTP 402 until `PAYMENT-SIGNATURE` is attached; **free** routes use `?secret=` or `?agent_token=`.\n\n**Execution:** New jobs are **humans-only** (`execution_mode=human`). Other modes are rejected until a future release.\n\nSee also: `GET /.well-known/x402`, `GET /skill.md`."
+    "description": "Machine-readable contract for the EarnFi **Agent API** (`ai-agent/v1`). **Paid** routes return HTTP 402 until `PAYMENT-SIGNATURE` is attached; **free** routes use `?secret=` or `?agent_token=`.\n\n**Execution:** New jobs are **humans-only** (`execution_mode=human`). Other modes are rejected until a future release.\n\n**Discovery:** x402 v2 at **https://earnfi.fun/.well-known/x402**. Skill and OpenAPI in the app: **https://app.earnfi.fun/skill.md**, **https://app.earnfi.fun/openapi-x402.json**."
   },
   "servers": [
     {
-      "url": "{{APP_URL}}/wp-json/ai-agent/v1",
-      "description": "WordPress REST — Agent API namespace"
+      "url": "https://app.earnfi.fun/api/ai-agent/v1",
+      "description": "EarnFi Agent API namespace"
     }
   ],
   "tags": [
@@ -122,7 +122,7 @@
       "get": {
         "tags": ["polling"],
         "summary": "List submissions",
-        "description": "**Billing: free** — same as Wurk’s “view submissions” pattern; **no** per-request USDC charge (unlike optional “recover” style paid utilities on some platforms)."
+        "description": "**Billing: free** — list submissions with the job’s secret; **no** per-request USDC (optional paid “recover”-style utilities are not part of the core read model)."
       }
     },
     "/jobs/{id}/completions": {

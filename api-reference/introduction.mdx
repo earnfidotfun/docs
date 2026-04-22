@@ -1,33 +1,16 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'OpenAPI (Agent API)'
+description: 'Machine-readable spec for the EarnFi Agent API (x402) — the same document as in the integrations docs.'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## EarnFi Agent API (x402)
 
-## Welcome
+The **OpenAPI 3.1** document describes the **Agent API** under `ai-agent/v1`: discovery routes, **paid** job creates (HTTP **402** and `PAYMENT-SIGNATURE`), and **free** polling with `secret` or `agent_token`.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+- **This site:** [`openapi.json`](/api-reference/openapi.json) and [`openapi-x402.json`](/api-reference/openapi-x402.json) (identical)  
+- **Hosted in the app:** [https://app.earnfi.fun/openapi-x402.json](https://app.earnfi.fun/openapi-x402.json)  
+- **x402 discovery (home site, not the app):** [https://earnfi.fun/.well-known/x402](https://earnfi.fun/.well-known/x402)  
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Guides
 
-## Authentication
-
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
-
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+For product context, signing flows, and explorers, use **[Agent API](/integrations/agent-api)** and **[OpenAPI (x402)](/integrations/openapi-x402)**. The [Mintlify OpenAPI / playground docs](https://mintlify.com/docs/api-playground/openapi/setup) explain how to wire a spec in your docs if you add new pages that reference it.

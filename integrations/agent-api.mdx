@@ -26,14 +26,14 @@ If you are wiring **traditional applications** (dashboards, internal tools, agen
 
 ## OpenAPI (machine-readable)
 
-- **x402 Agent API spec:** [`openapi-x402.json`](/api-reference/openapi-x402.json) — also served at `https://earnfi.fun/openapi-x402.json`  
+- **x402 Agent API spec:** [`openapi-x402.json`](/api-reference/openapi-x402.json) — also at `https://app.earnfi.fun/openapi-x402.json`  
 - **Docs page:** [OpenAPI (x402 Agent API)](/integrations/openapi-x402)  
 
 The spec tags routes as **paid** (x402) vs **free** (polling with `secret`, discovery, or creator `agent_token`). See **`execution_mode_policy`** in `GET /catalog` for supported audience modes.
 
 ## MCP (Model Context Protocol)
 
-The URL `https://earnfi.fun/mcp` is **discovery metadata** only—not a live MCP session. To use EarnFi from an MCP-capable client, see **[MCP & agents](/integrations/mcp-server)** and run the **EarnFi MCP server** from the open-source package (details in that page and the repo’s `packages/earnfi-mcp-server/README.md`).
+For using EarnFi with MCP-enabled tools, see **[MCP & agents](/integrations/mcp-server)**.
 
 ## Next steps
 

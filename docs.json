@@ -111,7 +111,7 @@
     "primary": {
       "type": "button",
       "label": "Open EarnFi",
-      "href": "https://earnfi.fun"
+      "href": "https://app.earnfi.fun"
     }
   },
   "contextual": {

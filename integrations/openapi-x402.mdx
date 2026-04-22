@@ -5,10 +5,10 @@ description: "Machine-readable OpenAPI 3.1 for the EarnFi Agent API — paid vs 
 
 ## Overview
 
-The **x402-focused OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery endpoints, **paid** job creates (HTTP 402 → `PAYMENT-SIGNATURE`), and **free** polling with `secret`.
+The **x402-focused OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery endpoints, **paid** job creates (HTTP 402 → `PAYMENT-SIGNATURE`), **free** polling with `secret` and **free** requests with `agent-token`.
 
-- **Canonical URL (production):** `https://earnfi.fun/openapi-x402.json`  
-- **Same file in this repo:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json)
+- **OpenAPI:** `https://app.earnfi.fun/openapi-x402.json`  
+- **Alternative OpenAPI URL:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json)
 
 Each path is tagged with **billing** (`discovery`, `x402-paid-create`, `polling`, `creator`). New jobs require **`execution_mode=human`** only; other modes are rejected until a future release.
 
@@ -16,8 +16,4 @@ Each path is tagged with **billing** (`discovery`, `x402-paid-create`, `polling`
 
 - **[Agent API](/integrations/agent-api)** — product overview and explorer link  
 - **Work API** — separate developer-key surface; see [Work API](/integrations/work-api)  
-- **`/.well-known/x402`** — lists discovery URLs and OpenAPI for registries  
-
-## Wurk comparison (economics)
-
-On comparable platforms, **viewing submissions / polling** is typically **free** once you hold a job secret; **payment** is for **create / settle**, not per read. EarnFi follows the same pattern: **no USDC per poll** on `GET /jobs/{id}/submissions?secret=…`.
+- **x402 discovery (canonical on the home site):** [https://earnfi.fun/.well-known/x402](https://earnfi.fun/.well-known/x402)  
