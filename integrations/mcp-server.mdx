@@ -1,115 +1,26 @@
 ---
-title: "MCP server (production standard)"
-description: "Run a real Model Context Protocol server with Streamable HTTP, JSON-RPC sessions, and tools—like production agents (e.g. Wurk), not static discovery JSON."
+title: "MCP & agents"
+description: "Use EarnFi from AI clients that support the Model Context Protocol (MCP)."
 ---
 
-## What “production MCP” means
+## What you can do
 
-A **real MCP server** speaks the **Model Context Protocol** over a defined **transport** and **JSON-RPC 2.0** message shape. Clients (Claude Desktop, Cursor, IDE agents, custom runtimes) connect, complete **`initialize`**, then call **`tools/list`**, **`tools/call`**, and optionally **resources** or **prompts**.
+If your **AI app or IDE** supports **MCP** (for example some Claude or Cursor workflows), you can connect it to an **MCP server** that talks to EarnFi on your behalf—catalog, job status, and other [Agent API](/integrations/agent-api) actions—without using the public website for every step.
 
-What **EarnFi hosts today** at `https://earnfi.fun/mcp` is **discovery metadata** (skill URL, REST bases, notes)—**not** a live MCP session. Opening that URL in a browser or sending a random POST without a proper session often returns errors such as **`No MCP session ID`**—that is expected until a **full MCP transport** is implemented on the host.
+## What EarnFi hosts at `/mcp`
 
-To match **Wurk-style** and **spec-correct** behavior, you run a **small MCP server** (your infrastructure) that **proxies** to EarnFi’s **REST APIs** (Work API and/or Agent API).
+The URL **`https://earnfi.fun/mcp`** returns **lightweight discovery** (where to find the skill file and APIs). It is **not** a full interactive MCP session. If a tool shows an error about a **missing session**, that usually means the product expects a **dedicated MCP server** rather than that JSON page.
 
----
+## Running your own MCP bridge (recommended)
 
-## Protocol basics (MCP + JSON-RPC)
+For a **real MCP session** (the kind production agents use), run the **EarnFi MCP server** on infrastructure you control—for example a **VPS** with Node.js. The open-source package lives in the EarnFi monorepo at **`packages/earnfi-mcp-server`** and exposes a standard **Streamable HTTP** endpoint you can place behind **HTTPS** (Caddy, nginx) for clients that require a secure URL.
 
-1. **Transport (recommended for remote):** **Streamable HTTP** (`POST` endpoint, optional **SSE** for server → client messages).  
-2. **Protocol revision:** declare **`2024-11-05`** or newer (see [MCP specification](https://spec.modelcontextprotocol.io/) for the revision your SDK targets).  
-3. **Session:** After `initialize`, the server may return a **`Mcp-Session-Id`** (or equivalent); subsequent requests **must** include that header.  
-4. **Message flow (minimal):**
-   - Client → Server: `initialize` (JSON-RPC request)  
-   - Server → Client: `initialize` result (capabilities, serverInfo)  
-   - Client → Server: `notifications/initialized` (notification)  
-   - Client → Server: `tools/list`  
-   - Client → Server: `tools/call` with `name` + `arguments` for each tool  
+- Technical setup, environment variables, and operations are documented in the **package README** in the repository—not duplicated here, so this site stays focused on using EarnFi as a person or app developer.
 
----
+## Learn more
 
-## What you implement (checklist)
+- [Agent API](/integrations/agent-api) — registration, x402, polling  
+- [OpenAPI (x402)](/integrations/openapi-x402) — machine-readable route map  
+- [Work API](/integrations/work-api) — API-key integrations (separate from the Agent API)  
 
-| Layer | Responsibility |
-|--------|----------------|
-| **HTTPS + TLS** | Public URL, valid certificate (Let’s Encrypt, etc.). |
-| **MCP transport** | Streamable HTTP handler (or **stdio** for local-only). |
-| **Session store** | Map `Mcp-Session-Id` → session state (in-memory, Redis, etc.). |
-| **JSON-RPC router** | Parse body, dispatch `initialize`, `tools/list`, `tools/call`, handle errors (`-32700` parse, `-32601` method not found, MCP-specific codes). |
-| **Tools** | One tool per high-level action (e.g. `earnfi_catalog`, `earnfi_quote_social`, `earnfi_pay_social`, `earnfi_poll_job`). |
-| **EarnFi REST** | Inside `tools/call`, call `https://earnfi.fun/wp-json/ai-agent/v1/...` (and Work API if needed) with correct headers. |
-| **Secrets** | `agent_token`, Work API key, wallet signer—**only** in server env, never in model prompts. |
-| **x402 / payments** | Build/sign **Solana USDC** txs in the **bridge** (or a dedicated signer service), not inside the LLM. |
-
----
-
-## Streamable HTTP (sketch)
-
-1. **Endpoint:** e.g. `POST https://mcp.yourdomain.com/mcp`  
-2. **Headers (typical):**  
-   - `Content-Type: application/json`  
-   - `Accept: application/json, text/event-stream`  
-   - After first response: `Mcp-Session-Id: <uuid>` on requests  
-3. **Body:** Single JSON-RPC object or batch (per SDK).  
-4. **SSE:** If the spec/SDK uses SSE for streaming, keep the connection per session as documented in [@modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk).
-
-Exact headers and session semantics should follow the **SDK version** you pin (they align with MCP revisions).
-
----
-
-## Reference implementation path (Node.js)
-
-This is the usual stack used in tutorials and in many production bridges:
-
-1. **Runtime:** Node **20+**.  
-2. **Package:** `@modelcontextprotocol/sdk` (official SDK).  
-3. **Server bootstrap:** Create an MCP `Server`, register **tools** with names, descriptions, and JSON Schema for `arguments`.  
-4. **HTTP adapter:** Use the SDK’s **Streamable HTTP** / transport helpers so `initialize` and session IDs work as expected—not a raw “echo JSON” route.  
-5. **Tool handlers:**  
-   - **Read-only:** `fetch` EarnFi `GET /ai-agent/v1/catalog`, `GET /jobs/{id}?secret=…`.  
-   - **Paid creates:** Use `@x402/fetch` or your wallet pipeline to do **402 → sign → retry** with `PAYMENT-SIGNATURE`; keep private keys in **HSM, KMS, or local signer**, not in the LLM context.  
-6. **Deploy:** Container (Docker) behind nginx/Caddy; **only** TLS 1.2+; rate-limit `/mcp`.  
-7. **Observability:** Structured logs for each JSON-RPC method and each EarnFi HTTP call (redact tokens).
-
----
-
-## Mapping tools → EarnFi (examples)
-
-| MCP tool name | EarnFi action |
-|----------------|---------------|
-| `earnfi_agent_catalog` | `GET /wp-json/ai-agent/v1/catalog` |
-| `earnfi_x402_descriptor` | `GET /wp-json/ai-agent/v1/x402` |
-| `earnfi_quote_social` | `GET /jobs/social?...` without `PAYMENT-SIGNATURE` → read `402` / `accepts` |
-| `earnfi_pay_social` | Retry same URL with `PAYMENT-SIGNATURE` |
-| `earnfi_poll_job` | `GET /jobs/{id}?secret=…` |
-
-Register **`inputSchema`** for each tool so clients (and models) know required fields (`agent_token`, `task_type`, `secret`, etc.).
-
----
-
-## Client configuration (examples)
-
-- **Cursor / Claude Desktop:** Point MCP at your HTTPS URL (or stdio command for local bridge).  
-- **Custom agent:** Use an MCP client library that implements **Streamable HTTP** + **session** headers.
-
----
-
-## How this compares to Wurk
-
-Hosted products (including Wurk) typically expose an MCP endpoint that **already** runs the full stack above. EarnFi’s **public `/mcp` JSON** is **intentionally lightweight** so you can **self-host** the MCP layer and keep **full control** of keys and signing—while using the same **REST + x402** contracts documented under [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402).
-
----
-
-## Security checklist
-
-- Never pass **`agent_token`**, **job `secret`**, or **API keys** through the model as plain text in multi-user setups; resolve them server-side from **per-user** or **per-deployment** env.  
-- Separate **read tools** (poll) from **pay tools** (x402); require explicit human or policy approval for spend.  
-- Rotate keys and invalidate sessions on logout.
-
----
-
-## Related
-
-- [Agent API](/integrations/agent-api)  
-- [OpenAPI (x402 Agent API)](/integrations/openapi-x402)  
-- [Work API](/integrations/work-api)  
-- Discovery JSON (not a session): `https://earnfi.fun/mcp`  
+Need help? `hello@earnfi.fun`
