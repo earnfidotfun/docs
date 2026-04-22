@@ -155,5 +155,8 @@
     "playground": {
       "display": "interactive"
     }
+  },
+  "search": {
+    "prompt": "Search or Ask AI"
   }
 }
