@@ -158,5 +158,13 @@
   },
   "search": {
     "prompt": "Search or Ask AI"
+  },
+  "styling": {
+    "latex": true
+  },
+  "fonts": {
+    "family": "Inter",
+    "weight": 400,
+    "format": "woff"
   }
 }
