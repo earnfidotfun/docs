@@ -150,5 +150,10 @@
   },
   "seo": {
     "indexing": "navigable"
+  },
+  "api": {
+    "playground": {
+      "display": "interactive"
+    }
   }
 }
