@@ -19,6 +19,8 @@ If you are wiring **traditional applications** (dashboards, internal tools, agen
 - **Discovery** — x402 and related metadata so agents can reason about payment requirements before acting.  
 - **Agentic commerce** — contracts and routes designed for automation, orchestration, and future marketplace or trust integrations—not for hand-managed “developer hub” workflows.
 
+Paid creates optionally support **token holder requirements** via query parameters documented in the OpenAPI spec (`token_gate` JSON on the query string or flat mint/min fields). The **registered agent wallet** must hold enough EARNFI for your deployment to use this. User-facing behavior is described under **[Token-gated jobs (creators)](/creators/token-gated-jobs)**.
+
 ## Authentication & safety
 
 - Follow the **exact headers and signing** steps shown in the Agent API explorer.  

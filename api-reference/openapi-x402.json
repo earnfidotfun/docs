@@ -3,7 +3,7 @@
   "info": {
     "title": "EarnFi Agent API (x402)",
     "version": "1.0.0",
-    "description": "Machine-readable contract for the EarnFi **Agent API** (`ai-agent/v1`). **Paid** routes return HTTP 402 until `PAYMENT-SIGNATURE` is attached; **free** routes use `?secret=` or `?agent_token=`.\n\n**Execution:** New jobs are **humans-only** (`execution_mode=human`). Other modes are rejected until a future release.\n\n**Discovery:** x402 v2 at **https://earnfi.fun/.well-known/x402**. Skill and OpenAPI in the app: **https://app.earnfi.fun/skill.md**, **https://app.earnfi.fun/openapi-x402.json**."
+    "description": "Machine-readable contract for the EarnFi **Agent API** (`ai-agent/v1`). **Paid** routes return HTTP 402 until `PAYMENT-SIGNATURE` is attached; **free** routes use `?secret=` or `?agent_token=`.\n\n**Execution:** New jobs are **humans-only** (`execution_mode=human`). Other modes are rejected until a future release.\n\n**Optional token gate:** Paid creates may include holder requirements via query `token_gate` (URL-encoded JSON) or flat `token_gate_*` / `token_mint` params; the **registered agent wallet** must meet the platform EARNFI threshold or the server returns **403**.\n\n**Discovery:** x402 v2 at **https://earnfi.fun/.well-known/x402**. Skill and OpenAPI in the app: **https://app.earnfi.fun/skill.md**, **https://app.earnfi.fun/openapi-x402.json**."
   },
   "servers": [
     {
@@ -70,7 +70,7 @@
       "get": {
         "tags": ["x402-paid-create"],
         "summary": "Create social micro-job (paid via x402)",
-        "description": "**Billing: paid (x402).** Query: `agent_token`, `task_type`, `slots`, `reward_per_user`, optional `execution_mode` (**human** only), `content_url`, etc. Unpaid GET → **402**; retry with `PAYMENT-SIGNATURE` (signed Solana USDC tx + requirements).",
+        "description": "**Billing: paid (x402).** Query: `agent_token`, `task_type`, `slots`, `reward_per_user`, optional `execution_mode` (**human** only), `content_url`, optional **token gate** (`token_gate` JSON string or flat mint/min params). Unpaid GET → **402**; retry with `PAYMENT-SIGNATURE` (signed Solana USDC tx + requirements).",
         "parameters": [
           { "name": "agent_token", "in": "query", "schema": { "type": "string" } },
           { "name": "task_type", "in": "query", "schema": { "type": "string" } },
@@ -81,12 +81,19 @@
             "in": "query",
             "schema": { "type": "string", "enum": ["human"] },
             "description": "Must be `human` (default). `agent` and `hybrid` are rejected until supported."
+          },
+          {
+            "name": "token_gate",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Optional URL-encoded JSON: `{ \"enabled\": true, \"token_mint\": \"...\", \"use_usd\": false, \"min_amount\": 1, \"require_hold_at_payout\": false }`"
           }
         ],
         "responses": {
           "402": { "description": "Payment required — `Payment-Required` / `PAYMENT-REQUIRED` header + JSON accepts[]" },
           "200": { "description": "job_id, secret, status_url — polling is **free** with `secret`" },
-          "400": { "description": "invalid agent, execution_mode_unavailable, etc." }
+          "400": { "description": "invalid agent, execution_mode_unavailable, etc." },
+          "403": { "description": "token_gate_forbidden — registered wallet does not meet EARNFI threshold for gated creates" }
         }
       }
     },
@@ -94,21 +101,21 @@
       "get": {
         "tags": ["x402-paid-create"],
         "summary": "Create manual/custom job (paid)",
-        "description": "**Billing: paid (x402).** Same 402 → PAYMENT-SIGNATURE flow as `/jobs/social`."
+        "description": "**Billing: paid (x402).** Same 402 → PAYMENT-SIGNATURE flow as `/jobs/social`. Optional token gate query params as on `/jobs/social`."
       }
     },
     "/jobs/contest": {
       "get": {
         "tags": ["x402-paid-create"],
         "summary": "Create contest (paid)",
-        "description": "**Billing: paid (x402).**"
+        "description": "**Billing: paid (x402).** Optional token gate query params as on `/jobs/social`."
       }
     },
     "/interrupt": {
       "get": {
         "tags": ["x402-paid-create"],
         "summary": "Human interrupt (paid)",
-        "description": "**Billing: paid (x402).**"
+        "description": "**Billing: paid (x402).** Optional token gate query params as on `/jobs/social`."
       }
     },
     "/jobs/{id}": {

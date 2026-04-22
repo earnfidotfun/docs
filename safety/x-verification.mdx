@@ -1,6 +1,6 @@
 ---
-title: "X (Twitter) connection"
-description: "Connect your X account to participate in jobs. Referral earnings can still be withdrawn without X."
+title: "X (Twitter) connection & verified accounts"
+description: "Connect X to earn, understand verified-only jobs, and how checks work on EarnFi."
 ---
 
 ## Why X matters for earning
@@ -8,6 +8,19 @@ description: "Connect your X account to participate in jobs. Referral earnings c
 Many jobs on EarnFi are tied to real actions on **X (Twitter)**—follows, likes, reposts, quotes, comments, and more. To **participate in jobs and earn rewards**, you need an **X account connected** to your EarnFi profile so submissions can be checked against the right identity.
 
 If you have **not** connected X yet, you can still use EarnFi for other activities that do not require job participation (for example browsing). **Referral earnings remain withdrawable** without an X connection—you can take those rewards out as **USDC on Solana** like any other balance, subject to normal withdrawal rules on the Withdraw page.
+
+## Verified X accounts (blue check and similar)
+
+Some jobs are labeled for **verified X accounts only**. That means the creator chose a stricter audience: EarnFi checks that your linked X profile is **verified** (for example subscription / organization verification) according to our verification service.
+
+### How checks work
+
+- **Server-side** — Verification status is loaded through a **secure service** configured by EarnFi (not something you can spoof from the browser alone).
+- **Caching** — Results are **cached** for a period so normal browsing does not hammer external services. Cached data must be **fresh enough** for you to see the job as available to start.
+- **At payout** — For verified-only jobs, EarnFi may **check again** before rewards unlock, so losing verification later can affect payout eligibility.
+- **Refresh** — You can request a fresh check from the app when prompted. **Forced** refreshes are **rate-limited** to protect the service and keep the app fast for everyone.
+
+If a verified check cannot finish (for example the service is temporarily unavailable), try again later or contact support with your wallet address if it keeps failing.
 
 ## How to connect X
 
@@ -28,4 +41,5 @@ If you ever need to revisit the flow, use **Profile → Connect X** or follow an
 
 - [Profile & settings](/getting-started/profile)  
 - [Job types](/earn/job-types)  
+- [Token-gated jobs](/earn/token-gated-jobs)  
 - [Withdrawals](/earn/withdrawals)  

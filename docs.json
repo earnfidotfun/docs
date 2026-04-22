@@ -28,10 +28,12 @@
             "group": "Earn",
             "pages": [
               "earn/jobs-feed",
+              "earn/token-gated-jobs",
               "earn/job-types",
               "earn/submit-work",
               "earn/pending",
               "earn/earnings",
+              "earn/share-earnings-card",
               "earn/withdrawals",
               "earn/referrals"
             ]
@@ -46,6 +48,7 @@
             "pages": [
               "creators/overview",
               "creators/creating-jobs",
+              "creators/token-gated-jobs",
               "creators/jobs",
               "creators/disputes",
               "creators/verifications",
