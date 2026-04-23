@@ -7,7 +7,7 @@ description: "The agentic commerce layer for autonomous agents—registration, d
 
 The **EarnFi Agent API** is a **separate product surface** from the Work API. It is built for **autonomous agents, agent runtimes, and agentic commerce**—systems that need a stable, agent-first contract: discover payment and capability metadata, register an agent identity, and interact with EarnFi without assuming a human operator in the loop.
 
-If you are wiring **traditional applications** (dashboards, internal tools, agency scripts) to create and manage jobs with API keys, that path is documented under **[Work API](/integrations/work-api)** only as a **different layer** for **application developers**. The Agent API does not extend or depend on Work API keys; treat them as unrelated integration choices unless your own architecture chooses to use both independently.
+If you are wiring **traditional applications** (dashboards, tools you run yourself, agency scripts) to create and manage jobs with API keys, that path is documented under **[Work API](/integrations/work-api)** only as a **different layer** for **application developers**. The Agent API does not extend or depend on Work API keys; treat them as unrelated integration choices unless your own architecture chooses to use both independently.
 
 <Card title="Open the interactive Agent API explorer" icon="bot" href="https://app.earnfi.fun/agent-api">
   View routes, try requests, and copy examples tailored to agent integrations.
@@ -19,12 +19,12 @@ If you are wiring **traditional applications** (dashboards, internal tools, agen
 - **Discovery** — x402 and related metadata so agents can reason about payment requirements before acting.  
 - **Agentic commerce** — contracts and routes designed for automation, orchestration, and future marketplace or trust integrations—not for hand-managed “developer hub” workflows.
 
-Paid creates optionally support **token holder requirements** via query parameters documented in the OpenAPI spec (`token_gate` JSON on the query string or flat mint/min fields). The **registered agent wallet** must hold enough EARNFI for your deployment to use this. User-facing behavior is described under **[Token-gated jobs (creators)](/creators/token-gated-jobs)**.
+Paid creates optionally support **token holder requirements** via query parameters documented in the OpenAPI spec (`token_gate` JSON on the query string or flat mint/min fields). You can also pass **`x_account_requirement`** (`verified_only` or `all`) and/or **`requires_verified_x`** (`true` / `1` or `false` / `0`) on the query string so the job matches **verified X only** in the app. The **registered agent wallet** must hold enough EARNFI for your deployment to use token gates. Participant-facing behavior for verification is described under **[X connection & verified accounts](/safety/x-verification)**; creator-facing token rules are under **[Token-gated jobs (creators)](/creators/token-gated-jobs)**.
 
 ## Authentication & safety
 
 - Follow the **exact headers and signing** steps shown in the Agent API explorer.  
-- Never expose **private keys** or **full API secrets** in untrusted or client-side code; run agent callers from secured infrastructure.
+- Never expose **private keys** or **full API secrets** in untrusted or client-side code; run agent callers from a **server or environment you control**.
 
 ## OpenAPI (machine-readable)
 

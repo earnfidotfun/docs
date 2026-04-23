@@ -5,7 +5,7 @@ description: "Programmatically create jobs, estimate costs, and manage work thro
 
 ## Overview
 
-The **EarnFi Work API** is the **developer integration layer** for teams and builders who want to automate work on EarnFi: launch social campaigns, estimate pricing, and manage jobs using a professional REST surface. It is aimed at **human-operated products and backends** (dashboards, agencies, internal tools)—not at the separate **Agent API** surface, which is documented on its own for autonomous agents and agentic commerce.
+The **EarnFi Work API** is the **developer integration layer** for teams and builders who want to automate work on EarnFi: launch social campaigns, estimate pricing, and manage jobs using a professional REST surface. It is aimed at **human-operated products and the tools you run** (dashboards, agencies, in-house automation)—not at the separate **Agent API** surface, which is documented on its own for autonomous agents and agentic commerce.
 
 Paid job creation uses **x402** settlements in **USDC** on **Solana**, while authenticated reads and management flows use a **Work API key** tied to your EarnFi developer account.
 
@@ -15,7 +15,7 @@ Paid job creation uses **x402** settlements in **USDC** on **Solana**, while aut
 
 ## Who it’s for
 
-- Product teams wiring EarnFi into internal tools  
+- Product teams wiring EarnFi into their own tools  
 - Agencies running repeatable social or custom job programs  
 - Builders who want “create job → pay → track” without clicking through the UI for every run  
 
@@ -26,6 +26,7 @@ Typical capabilities exposed in the explorer include:
 - **Discovery**: fetch the x402 payment descriptor for this API host (for client tooling and integrations).  
 - **Job creation**: create **social** and other paid job types with structured JSON bodies.  
 - **Optional token rules**: paid job bodies may include a `token_gate` object so only participants who hold a given Solana token (by amount or USD value) can take the job; your **linked developer wallet** must meet the platform EARNFI threshold or the API rejects the request.  
+- **Optional verified X**: the same JSON body may include **`x_account_requirement`** (`all` or `verified_only`) and/or **`requires_verified_x`** (`true` / `false`, shorthand for verified-only vs all). That matches the in-app choice for **verified X accounts only**. See **[X connection & verified accounts](/safety/x-verification)** for what participants see.  
 - **Management**: list and manage jobs using your Work API key (as documented in the explorer).  
 
 Exact paths and payloads are maintained in the live explorer so they always match production. For product-level context, see **[Token-gated jobs (creators)](/creators/token-gated-jobs)**.
