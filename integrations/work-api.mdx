@@ -34,7 +34,7 @@ Exact paths and payloads are maintained in the live explorer so they always matc
 ## Authentication & payments
 
 - **Work API key**: send `Authorization: Bearer <your key>` on requests that require it. Keys are created from the in-app **Developer** area after you connect your wallet.  
-- **x402 (USDC on Solana)**: some `POST` routes return **402** with a quote first; you then retry the **same JSON body** with the payment signature header as described on the Work API page.  
+- **x402 (USDC on Solana)**: some `POST` routes return **402** with a quote first; you then retry the **same JSON body** with the **x402 payment header** described in that response (see the Work API explorer).  
 
 ## Next steps
 

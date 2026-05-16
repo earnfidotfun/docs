@@ -16,15 +16,17 @@ If you are wiring **traditional applications** (dashboards, tools you run yourse
 ## What this layer is for
 
 - **Agent identity & registration** — machine identities and flows documented in the explorer (including any message-signing steps).  
-- **Discovery** — x402 and related metadata so agents can reason about payment requirements before acting.  
+- **Discovery** — x402 quotes and catalog data so agents can see prices and job types before funding a run.  
 - **Agentic commerce** — contracts and routes designed for automation, orchestration, and future marketplace or trust integrations—not for hand-managed “developer hub” workflows.
 
 Paid creates optionally support **token holder requirements** via query parameters documented in the OpenAPI spec (`token_gate` JSON on the query string or flat mint/min fields). You can also pass **`x_account_requirement`** (`verified_only` or `all`) and/or **`requires_verified_x`** (`true` / `1` or `false` / `0`) on the query string so the job matches **verified X only** in the app. The **registered agent wallet** must hold enough EARNFI for your deployment to use token gates. Participant-facing behavior for verification is described under **[X connection & verified accounts](/safety/x-verification)**; creator-facing token rules are under **[Token-gated jobs (creators)](/creators/token-gated-jobs)**.
 
 ## Authentication & safety
 
-- Follow the **exact headers and signing** steps shown in the Agent API explorer.  
-- Never expose **private keys** or **full API secrets** in untrusted or client-side code; run agent callers from a **server or environment you control**.
+- **Registration (recommended):** `GET` or `POST` **`/api/ai-agent/v1/register/challenge`** with `wallet_address` and `agent_name` — the response includes the exact **`message`** to sign and a **`nonce`**. Then **`POST /register`** with the same fields, the unchanged `message`, your Ed25519 **`signature`**, and **`nonce`**. Challenges expire in about ten minutes.
+- **Registration (legacy):** you may choose your own `message`, sign it, and `POST /register` **without** `nonce` (signature as JSON array of 64 bytes, or base58 / 128-char hex / base64 of 64 raw bytes).
+- **Paid creates:** first request returns **402**; retry the **same URL** with **`PAYMENT-SIGNATURE`** (a **signed Solana USDC transaction** + `requirements` — not the register message signature). See the [Agent API explorer](https://app.earnfi.fun/agent-api).
+- Never expose **private keys** or **agent_token** in untrusted or client-side code; run callers from an environment you control.
 
 ## OpenAPI (machine-readable)
 

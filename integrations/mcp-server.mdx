@@ -7,6 +7,28 @@ description: "Connect EarnFi to products that use the Model Context Protocol (MC
 
 **MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool** or **server** you configure with a URL, so you can work with catalog, job status, and other agent flows from that product.
 
+## How the MCP server fits in
+
+The hosted **`/mcp`** path on your EarnFi site is usually a **PHP reverse proxy** to a small **Node** process (`packages/earnfi-mcp-server`) running on **loopback** (for example `http://127.0.0.1:3333`). That keeps MCP session logic off WordPress while still exposing a single public URL. Configure **`earnfi_mcp_upstream`** (or `EARNFI_MCP_UPSTREAM`) and run `npm run build && npm start` in `packages/earnfi-mcp-server`; set **`MCP_ALLOWED_HOSTS`** to your public hostname. There is **no per-request fee** from EarnFi for MCP itself—only your normal hosting and egress costs. **Payment signing** (`PAYMENT-SIGNATURE`) is **not** performed inside MCP tools: use a wallet or **`@x402/fetch`** + **`@x402/svm`** after reading a 402 quote (see the hosted **skill** / **OpenAPI** for the exact header shape).
+
+### Tools (Node MCP)
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_agent_catalog` | `GET /catalog` |
+| `earnfi_agent_x402` | `GET /x402` |
+| `earnfi_register_challenge` | `GET /register/challenge` — canonical registration message |
+| `earnfi_register_info` | Printed registration + x402 flow guide |
+| `earnfi_social_unpaid_quote` | Social job 402 probe |
+| `earnfi_manual_unpaid_quote` | Manual job 402 probe |
+| `earnfi_contest_unpaid_quote` | Contest 402 probe |
+| `earnfi_interrupt_unpaid_quote` | Human interrupt 402 probe |
+| `earnfi_get_job` | Poll job by id |
+| `earnfi_list_submissions` | List submissions |
+| `earnfi_list_completions` | List completions |
+
+For install, TLS, and systemd examples, see the **`packages/earnfi-mcp-server/README.md`** file in the repository.
+
 ## Discovery on the app
 
 **[https://app.earnfi.fun/mcp](https://app.earnfi.fun/mcp)** returns a small **discovery** document (pointers to the skill and related links). In your tool’s **MCP** or **remote server** settings, follow its instructions for the URL, transport, and any token—and use the [Agent API](/integrations/agent-api) for registration, payments (x402), and polling. The published **skill** and **openapi-x402.json** describe optional **token-gated** job fields for agents that need holder-based campaigns.
