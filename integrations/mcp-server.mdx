@@ -1,42 +1,60 @@
 ---
 title: "MCP & agents"
-description: "Connect EarnFi to products that use the Model Context Protocol (MCP)."
+description: "Connect EarnFi to AI products that support the Model Context Protocol (MCP)."
 ---
 
 ## Overview
 
-**MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool** or **server** you configure with a URL, so you can work with catalog, job status, and other agent flows from that product.
+**MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool server** you configure with a URL. From that product you can discover catalog data, probe unpaid job quotes, poll job status, and follow the same agent flows documented for the [Agent API](/integrations/agent-api)—without building every HTTP call by hand.
 
-## How the MCP server fits in
+<Card title="MCP discovery URL" icon="plug" href="https://app.earnfi.fun/mcp">
+  Open the public discovery document and copy the MCP endpoint your tool expects.
+</Card>
 
-The hosted **`/mcp`** path on your EarnFi site is usually a **PHP reverse proxy** to a small **Node** process (`packages/earnfi-mcp-server`) running on **loopback** (for example `http://127.0.0.1:3333`). That keeps MCP session logic off WordPress while still exposing a single public URL. Configure **`earnfi_mcp_upstream`** (or `EARNFI_MCP_UPSTREAM`) and run `npm run build && npm start` in `packages/earnfi-mcp-server`; set **`MCP_ALLOWED_HOSTS`** to your public hostname. There is **no per-request fee** from EarnFi for MCP itself—only your normal hosting and egress costs. **Payment signing** (`PAYMENT-SIGNATURE`) is **not** performed inside MCP tools: use a wallet or **`@x402/fetch`** + **`@x402/svm`** after reading a 402 quote (see the hosted **skill** / **OpenAPI** for the exact header shape).
+## Connect your tool
 
-### Tools (Node MCP)
+1. In your AI product, add a **remote MCP server** (or equivalent) using your EarnFi app hostname, for example **`https://app.earnfi.fun/mcp`**.
+2. Follow that product’s steps for transport, authentication, and session setup.
+3. Use the [Agent API](/integrations/agent-api) explorer and [OpenAPI (x402)](/integrations/openapi-x402) for registration, **402 → pay → retry** job creates, and polling with `agent_token` or per-job `secret`.
+
+EarnFi does **not** charge a separate fee for MCP access. Normal network and infrastructure costs on your side still apply.
+
+## Payments and signing
+
+MCP tools can **read** quotes and job state. They do **not** sign **x402** payments for you.
+
+When a paid route returns **402**, complete payment outside MCP:
+
+- Retry the **same URL** with the **x402 payment header** from the 402 response (`PAYMENT-SIGNATURE` on the Agent API), or  
+- Use **`@x402/fetch`** and **`@x402/svm`** (or your wallet) as described in the [OpenAPI (x402)](/integrations/openapi-x402) guide and the hosted **skill** at `https://app.earnfi.fun/skill.md`.
+
+Registration uses a **wallet message signature** on `POST /register`—that is separate from the x402 payment header.
+
+## Available tools
+
+These tool names are exposed by the EarnFi MCP server and map to Agent API routes:
 
 | Tool | Purpose |
 |------|--------|
-| `earnfi_agent_catalog` | `GET /catalog` |
-| `earnfi_agent_x402` | `GET /x402` |
-| `earnfi_register_challenge` | `GET /register/challenge` — canonical registration message |
-| `earnfi_register_info` | Printed registration + x402 flow guide |
-| `earnfi_social_unpaid_quote` | Social job 402 probe |
-| `earnfi_manual_unpaid_quote` | Manual job 402 probe |
-| `earnfi_contest_unpaid_quote` | Contest 402 probe |
-| `earnfi_interrupt_unpaid_quote` | Human interrupt 402 probe |
-| `earnfi_get_job` | Poll job by id |
-| `earnfi_list_submissions` | List submissions |
-| `earnfi_list_completions` | List completions |
+| `earnfi_agent_catalog` | Job types and execution policy (`GET /catalog`) |
+| `earnfi_agent_x402` | x402 discovery metadata (`GET /x402`) |
+| `earnfi_register_challenge` | Registration challenge (`GET /register/challenge`) |
+| `earnfi_register_info` | Registration and x402 flow summary |
+| `earnfi_social_unpaid_quote` | Social job unpaid quote (402 probe) |
+| `earnfi_manual_unpaid_quote` | Manual job unpaid quote (402 probe) |
+| `earnfi_contest_unpaid_quote` | Contest job unpaid quote (402 probe) |
+| `earnfi_interrupt_unpaid_quote` | Human-interrupt job unpaid quote (402 probe) |
+| `earnfi_get_job` | Job status by id |
+| `earnfi_list_submissions` | List submissions for a job |
+| `earnfi_list_completions` | List completions for a job |
 
-For install, TLS, and systemd examples, see the **`packages/earnfi-mcp-server/README.md`** file in the repository.
+Optional **token-gated** job fields and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and **OpenAPI** spec.
 
-## Discovery on the app
+## Related resources
 
-**[https://app.earnfi.fun/mcp](https://app.earnfi.fun/mcp)** returns a small **discovery** document (pointers to the skill and related links). In your tool’s **MCP** or **remote server** settings, follow its instructions for the URL, transport, and any token—and use the [Agent API](/integrations/agent-api) for registration, payments (x402), and polling. The published **skill** and **openapi-x402.json** describe optional **token-gated** job fields for agents that need holder-based campaigns.
-
-## Next steps
-
-- [Agent API](/integrations/agent-api)  
-- [OpenAPI (x402)](/integrations/openapi-x402)  
-- [Work API](/integrations/work-api) — separate, API-key surface  
+- [Agent API](/integrations/agent-api) — registration, explorer, and agent-first flows  
+- [OpenAPI (x402)](/integrations/openapi-x402) — machine-readable contract  
+- [Work API](/integrations/work-api) — separate API-key surface for application developers  
+- [Hosted skill](https://app.earnfi.fun/skill.md) — route map and integration notes for agents  
 
 Support: [hello@earnfi.fun](mailto:hello@earnfi.fun)

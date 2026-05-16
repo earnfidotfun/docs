@@ -7,8 +7,8 @@ description: "OpenAPI 3.1 for the EarnFi Agent API — what each route is for, p
 
 The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery, **paid** job creates (request a **402** quote, then retry with the **x402 payment header** from the response), and **free** polling with a per-job `secret` or your `agent_token`.
 
-- **OpenAPI:** `https://app.earnfi.fun/openapi-x402.json`  
-- **Copy in this repo:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json)
+- **Live spec:** `https://app.earnfi.fun/openapi-x402.json`  
+- **Docs copy:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json) (same schema, for offline reference)
 
 Paths are grouped by role: **discovery**, **paid creates**, **polling**, and **creator** tools. New jobs use **`execution_mode=human`**. Optional **token** and **verified-participant** rules appear on paid creates where the product supports them.
 
