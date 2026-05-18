@@ -46,14 +46,21 @@ All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text bloc
 | `earnfi_agent_catalog` | Job types and execution policy (`GET /catalog`) |
 | `earnfi_agent_x402` | x402 discovery metadata (`GET /x402`) |
 | `earnfi_register_challenge` | Registration challenge (`GET /register/challenge`) |
+| `earnfi_register` | Complete registration (`POST /register`) — returns `agent_token` |
 | `earnfi_register_info` | Registration + paid-create flow summary |
 | `earnfi_social_create` | Social / repost / like jobs — **paid 2-step** |
 | `earnfi_manual_create` | Manual / custom jobs — **paid 2-step** |
 | `earnfi_contest_create` | Contests — **paid 2-step** |
 | `earnfi_interrupt_create` | Human interrupt — **paid 2-step** |
+| `earnfi_get_interrupt` | Poll interrupt (`GET /interrupt/{id}`) |
 | `earnfi_get_job` | Job status by id (free) |
 | `earnfi_list_submissions` | List submissions (free) |
 | `earnfi_list_completions` | List completions (free) |
+| `earnfi_get_job_detail` | Creator job detail (`agent_token`) |
+| `earnfi_get_job_users` | Creator job participants (`agent_token`) |
+| `earnfi_get_job_payments` | Creator job payments (`agent_token`) |
+| `earnfi_list_contest_submissions` | Contest submissions (`agent_token`) |
+| `earnfi_mark_contest_winner` | Mark contest winner (`agent_token`) |
 | `earnfi_list_verifications` | List pending verifications (creator) |
 | `earnfi_approve_verification` | Approve a verification |
 | `earnfi_reject_verification` | Reject a verification |
