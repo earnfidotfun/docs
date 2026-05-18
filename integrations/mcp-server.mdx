@@ -5,56 +5,71 @@ description: "Connect EarnFi to AI products that support the Model Context Proto
 
 ## Overview
 
-**MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool server** you configure with a URL. From that product you can discover catalog data, probe unpaid job quotes, poll job status, and follow the same agent flows documented for the [Agent API](/integrations/agent-api)—without building every HTTP call by hand.
+**MCP** (Model Context Protocol) lets supported AI products use EarnFi as a **tool server** you configure with a URL. You can discover catalog data, **create paid jobs** (quote then pay on the same tool), poll status, and run creator actions—aligned with the [Agent API](/integrations/agent-api), without hand-writing every HTTP call.
 
-<Card title="MCP discovery URL" icon="plug" href="https://app.earnfi.fun/mcp">
-  Open the public discovery document and copy the MCP endpoint your tool expects.
+<Card title="MCP endpoint" icon="plug" href="https://app.earnfi.fun/mcp">
+  Add this URL as a remote MCP server in your AI product (Streamable HTTP).
 </Card>
 
 ## Connect your tool
 
-1. In your AI product, add a **remote MCP server** (or equivalent) using your EarnFi app hostname, for example **`https://app.earnfi.fun/mcp`**.
+1. In your AI product, add a **remote MCP server** using your EarnFi app hostname, for example **`https://app.earnfi.fun/mcp`**.
 2. Follow that product’s steps for transport, authentication, and session setup.
-3. Use the [Agent API](/integrations/agent-api) explorer and [OpenAPI (x402)](/integrations/openapi-x402) for registration, **402 → pay → retry** job creates, and polling with `agent_token` or per-job `secret`.
+3. Set **`EARNFI_AGENT_TOKEN`** in the MCP environment (from [`POST /register`](/integrations/agent-api)) or pass `agent_token` on tool calls.
 
 EarnFi does **not** charge a separate fee for MCP access. Normal network and infrastructure costs on your side still apply.
 
-## Payments and signing
+## Paid job creates
 
-MCP tools can **read** quotes and job state. They do **not** sign **x402** payments for you.
+Paid tools use **one MCP tool, two calls** (optional `payment_signature`):
 
-When a paid route returns **402**, complete payment outside MCP:
+| Step | What you do |
+|------|-------------|
+| 1 | Call e.g. `earnfi_social_create` **without** `payment_signature` |
+| 2 | MCP returns structured JSON: `requires_payment: true`, `accepts`, `resource`, `total_cost`, `next_step` |
+| 3 | Sign USDC with `@x402/fetch`, your wallet, or a script (same as REST) |
+| 4 | Call the **same tool** again with the **same parameters** plus `payment_signature` |
+| 5 | MCP returns `success: true`, `job_id`, `secret`, polling URLs, etc. |
 
-- Retry the **same URL** with the **x402 payment header** from the 402 response (`PAYMENT-SIGNATURE` on the Agent API), or  
-- Use **`@x402/fetch`** and **`@x402/svm`** (or your wallet) as described in the [OpenAPI (x402)](/integrations/openapi-x402) guide and the hosted **skill** at `https://app.earnfi.fun/skill.md`.
+`payment_signature` is the **`PAYMENT-SIGNATURE`** header value (base64 JSON with `signed_tx` and `requirements`). It is **not** the Ed25519 signature used for `POST /register`.
 
-Registration uses a **wallet message signature** on `POST /register`—that is separate from the x402 payment header.
+The MCP process does **not** store your private key. Signing always happens on your client or local automation.
+
+## Response format
+
+All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text blocks), so agents can parse `requires_payment` and `accepts` directly.
 
 ## Available tools
-
-These tool names are exposed by the EarnFi MCP server and map to Agent API routes:
 
 | Tool | Purpose |
 |------|--------|
 | `earnfi_agent_catalog` | Job types and execution policy (`GET /catalog`) |
 | `earnfi_agent_x402` | x402 discovery metadata (`GET /x402`) |
 | `earnfi_register_challenge` | Registration challenge (`GET /register/challenge`) |
-| `earnfi_register_info` | Registration and x402 flow summary |
-| `earnfi_social_unpaid_quote` | Social job unpaid quote (402 probe) |
-| `earnfi_manual_unpaid_quote` | Manual job unpaid quote (402 probe) |
-| `earnfi_contest_unpaid_quote` | Contest job unpaid quote (402 probe) |
-| `earnfi_interrupt_unpaid_quote` | Human-interrupt job unpaid quote (402 probe) |
-| `earnfi_get_job` | Job status by id |
-| `earnfi_list_submissions` | List submissions for a job |
-| `earnfi_list_completions` | List completions for a job |
+| `earnfi_register_info` | Registration + paid-create flow summary |
+| `earnfi_social_create` | Social / repost / like jobs — **paid 2-step** |
+| `earnfi_manual_create` | Manual / custom jobs — **paid 2-step** |
+| `earnfi_contest_create` | Contests — **paid 2-step** |
+| `earnfi_interrupt_create` | Human interrupt — **paid 2-step** |
+| `earnfi_get_job` | Job status by id (free) |
+| `earnfi_list_submissions` | List submissions (free) |
+| `earnfi_list_completions` | List completions (free) |
+| `earnfi_list_verifications` | List pending verifications (creator) |
+| `earnfi_approve_verification` | Approve a verification |
+| `earnfi_reject_verification` | Reject a verification |
+| `earnfi_pause_job` | Pause or resume a job |
 
-Optional **token-gated** job fields and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and **OpenAPI** spec.
+Optional **token-gated** job fields and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402) spec.
+
+## REST-only alternative
+
+You can skip MCP and use the Agent API directly: first `GET` without payment → **402** → sign → retry with `PAYMENT-SIGNATURE`. MCP wraps the same behavior with structured JSON.
 
 ## Related resources
 
 - [Agent API](/integrations/agent-api) — registration, explorer, and agent-first flows  
 - [OpenAPI (x402)](/integrations/openapi-x402) — machine-readable contract  
+- [Hosted skill](https://app.earnfi.fun/skill.md) — route map, MCP tool table, and integration notes  
 - [Work API](/integrations/work-api) — separate API-key surface for application developers  
-- [Hosted skill](https://app.earnfi.fun/skill.md) — route map and integration notes for agents  
 
 Support: [hello@earnfi.fun](mailto:hello@earnfi.fun)
