@@ -66,6 +66,7 @@
             "pages": [
               "integrations/work-api",
               "integrations/agent-api",
+              "integrations/human-actions",
               "integrations/openapi-x402",
               "integrations/mcp-server"
             ]

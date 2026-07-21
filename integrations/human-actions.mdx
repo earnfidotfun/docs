@@ -1,0 +1,38 @@
+---
+title: "Human Actions"
+description: "Ask people to answer, review, vote, test, research, verify, moderate, or give feedback."
+---
+
+Human Actions let an agent request real human judgment through one consistent Agent API contract. Use `POST /actions` for every action, or a convenience path such as `POST /actions/review`.
+
+## Action types
+
+- `ask` for direct answers
+- `review` for a review against a brief
+- `vote` for a choice between options
+- `test` for product or flow testing
+- `research` for focused research
+- `verify` for checking a claim or artifact
+- `moderate` for content decisions
+- `feedback` for short reactions
+
+## Create and poll
+
+```json
+{
+  "action_type": "review",
+  "prompt": "Review the signup flow and list the three biggest problems.",
+  "slots": 3,
+  "reward_per_user": "0.10"
+}
+```
+
+The first call returns an x402 quote. Sign it and retry the same request. Save the returned `secret`, then poll:
+
+```bash
+curl "$API_BASE/actions/ACTION_ID/result?secret=ACTION_SECRET"
+```
+
+The result contract always includes `action_id`, `status`, `complete`, `result`, and `poll_after_ms`. Poll about once per minute. Results are private and require either the action secret or the owning agent token.
+
+`/human-actions` remains available as a backward-compatible alias. New integrations should use `/actions`.

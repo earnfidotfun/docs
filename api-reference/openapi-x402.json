@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "EarnFi Agent API (x402)",
-    "version": "1.0.0",
-    "description": "Machine-readable overview of the EarnFi **Agent API** (`ai-agent/v1`). **Paid** routes return HTTP **402** with a quote until you attach the **x402 payment header** shown in that response; **free** routes use `?secret=` or `?agent_token=`.\n\n**Who can run work:** New jobs are **humans-only** (`execution_mode=human`). Other modes are reserved for a future release.\n\n**Optional audience rules:** Paid creates may request token-holder gates or verified-participant options using query parameters documented on each path. See product docs for what participants see in the app.\n\n**Where to read more:** Narrative overview at https://docs.earnfi.fun (Agent API). For Solana transaction field layout, follow this file together with the x402 SDK you use in production."
+    "version": "1.1.0",
+    "description": "Machine-readable overview of the EarnFi **Agent API** (`ai-agent/v1`). **Official TypeScript SDK:** `npm install @earn-fi/agent-client` ([GitHub](https://github.com/earnfidotfun/agent-client)). **Paid** routes return HTTP **402** with a quote until you attach the **x402 payment header** and **`Agent-Token`** header (or `?agent_token=`); **free** routes use `?secret=` or `?agent_token=`.\n\n**MCP:** Streamable HTTP at `{origin}/mcp` exposes the same flows via tools such as `earnfi_social_create`. See `/skill.md`.\n\n**Who can run work:** New jobs are **humans-only** (`execution_mode=human`).\n\n**Where to read more:** Narrative overview at https://docs.earnfi.fun (Agent API). For Solana transaction layout, use `@earn-fi/agent-client` or the x402 SDK you choose in production."
   },
   "servers": [
     {
@@ -12,76 +12,165 @@
     }
   ],
   "tags": [
-    { "name": "discovery", "description": "Catalog and registration (no job payment), plus optional `/x402` preview" },
-    { "name": "x402-paid-create", "description": "Paid job creates: 402 quote, then retry with signed USDC payment header" },
-    { "name": "polling", "description": "Free reads with job secret or agent token" },
-    { "name": "creator", "description": "Free creator actions that require agent token" }
+    {
+      "name": "discovery",
+      "description": "Catalog and registration (no job payment), plus optional `/x402` preview"
+    },
+    {
+      "name": "x402-paid-create",
+      "description": "Paid job creates: 402 quote, then retry with signed USDC payment header"
+    },
+    {
+      "name": "polling",
+      "description": "Free reads with job secret or agent token"
+    },
+    {
+      "name": "creator",
+      "description": "Free creator actions that require agent token"
+    },
+    {
+      "name": "human-actions",
+      "description": "Paid requests for human judgment and work, with normalized private polling."
+    }
   ],
   "paths": {
     "/x402": {
       "get": {
-        "tags": ["discovery"],
-        "summary": "Preview how paid social jobs are priced",
+        "operationId": "getX402Preview",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Fetch x402 USDC pricing preview for social job creation",
         "description": "**Returns 402** with the same payment framing as `/jobs/social`, so tools can learn quote shape before you fund a real run.",
         "responses": {
-          "402": { "description": "x402 v2 JSON plus standard payment headers" }
-        }
+          "402": {
+            "description": "x402 v2 JSON plus standard payment headers"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ]
       },
       "post": {
-        "tags": ["discovery"],
-        "summary": "Same as GET",
+        "operationId": "postX402Preview",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Fetch x402 USDC pricing preview via POST for social jobs",
         "description": "Identical to GET; body is optional for discovery.",
         "responses": {
-          "402": { "description": "Same as GET" }
-        }
+          "402": {
+            "description": "Same as GET"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ]
       }
     },
     "/catalog": {
       "get": {
-        "tags": ["discovery"],
-        "summary": "Job types, minimum rewards, suggested sizes",
+        "operationId": "getCatalog",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "List job types, minimum rewards, and suggested sizes",
         "description": "**Free.** Lists what kinds of quick work you can fund, minimum pay, and suggested participant counts.",
         "responses": {
-          "200": { "description": "Catalog JSON" }
+          "200": {
+            "description": "Catalog JSON"
+          }
         }
       },
       "post": {
-        "tags": ["discovery"],
-        "summary": "Same as GET",
+        "operationId": "postCatalog",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Fetch the same catalog JSON as the GET catalog route",
         "description": "**Free.** Same JSON as GET.",
         "responses": {
-          "200": { "description": "Catalog JSON" }
+          "200": {
+            "description": "Catalog JSON"
+          }
         }
       }
     },
     "/register/challenge": {
       "get": {
-        "tags": ["discovery"],
-        "summary": "Canonical registration message",
+        "operationId": "getRegisterChallenge",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Fetch canonical agent registration challenge message",
         "description": "**Free.** Returns `message`, `nonce`, and expiry. Sign `message` exactly (UTF-8), then `POST /register` with the same `wallet_address`, `agent_name`, unchanged `message`, `signature`, and `nonce`. Recommended for autonomous clients.",
         "parameters": [
-          { "name": "wallet_address", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "agent_name", "in": "query", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "wallet_address",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "agent_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "message, nonce, expires_at" },
-          "400": { "description": "invalid_params" },
-          "409": { "description": "wallet_reserved_for_human_user" }
+          "200": {
+            "description": "message, nonce, expires_at"
+          },
+          "400": {
+            "description": "invalid_params"
+          },
+          "409": {
+            "description": "wallet_reserved_for_human_user"
+          }
         }
       },
       "post": {
-        "tags": ["discovery"],
-        "summary": "Same as GET",
+        "operationId": "postRegisterChallenge",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Fetch canonical agent registration challenge message",
         "description": "**Free.** Same parameters may be sent as JSON body (merged into request like other Agent routes).",
         "responses": {
-          "200": { "description": "Same as GET" }
+          "200": {
+            "description": "Same as GET"
+          },
+          "400": {
+            "description": "invalid_params"
+          },
+          "409": {
+            "description": "wallet_reserved_for_human_user"
+          }
         }
       }
     },
     "/register": {
       "post": {
-        "tags": ["discovery"],
-        "summary": "Register an agent (wallet-signed message)",
+        "operationId": "registerAgent",
+        "tags": [
+          "discovery"
+        ],
+        "summary": "Create agent credentials via wallet-signed registration message",
         "description": "**Free.** Creates an **agent_token** for your machine identity. This wallet message signature is **not** the same object you use for x402 paid creates after a 402 quote.",
         "requestBody": {
           "required": true,
@@ -89,117 +178,2041 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["wallet_address", "agent_name", "message", "signature"],
+                "required": [
+                  "wallet_address",
+                  "agent_name",
+                  "message",
+                  "signature"
+                ],
                 "properties": {
-                  "wallet_address": { "type": "string" },
-                  "agent_name": { "type": "string" },
-                  "message": { "type": "string" },
-                  "signature": {},
-                  "nonce": { "type": "string", "description": "Optional; when set, must match GET /register/challenge and message must match that challenge exactly." }
+                  "wallet_address": {
+                    "type": "string"
+                  },
+                  "agent_name": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Ed25519 wallet signature of the challenge message. Accepts base58, hex (128 chars), standard base64, or a JSON array of 64 integers (0–255)."
+                  },
+                  "nonce": {
+                    "type": "string",
+                    "description": "Optional; when set, must match GET /register/challenge and message must match that challenge exactly."
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "agent_id, agent_token" },
-          "400": { "description": "invalid_params" }
+          "200": {
+            "description": "agent_id, agent_token"
+          },
+          "400": {
+            "description": "invalid_params"
+          },
+          "409": {
+            "description": "wallet_reserved_for_human_user"
+          }
         }
       }
     },
     "/jobs/social": {
       "get": {
-        "tags": ["x402-paid-create"],
+        "operationId": "createSocialJob",
+        "tags": [
+          "x402-paid-create"
+        ],
         "summary": "Create a social or quick-engagement job (paid)",
         "description": "**Paid (x402).** Fund follows, likes, reposts, comments, watch tasks, and similar catalog work. **Without** a completed payment you receive **402** with `accepts[]` and a human-readable `resource.description`. **With** payment, retry the **same** request including the x402 payment header. Optional **token gate** and **verified-participant** query fields are documented in the live schema.",
         "parameters": [
-          { "name": "agent_token", "in": "query", "schema": { "type": "string" } },
-          { "name": "task_type", "in": "query", "schema": { "type": "string" } },
-          { "name": "slots", "in": "query", "schema": { "type": "integer" } },
-          { "name": "reward_per_user", "in": "query", "schema": { "type": "string" } },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "name": "task_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slots",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "reward_per_user",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "execution_mode",
             "in": "query",
-            "schema": { "type": "string", "enum": ["human"] },
-            "description": "Must be `human` (default). Other values are rejected until supported."
+            "schema": {
+              "type": "string",
+              "enum": [
+                "human"
+              ]
+            },
+            "description": "Must be human (default)."
+          },
+          {
+            "name": "content_url",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "token_gate",
             "in": "query",
-            "schema": { "type": "string" },
-            "description": "Optional URL-encoded JSON for token-holder rules when enabled for your deployment."
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "x_account_requirement",
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["all", "verified_only", "verified"]
-            },
-            "description": "Optional participant filter for verified accounts."
+              "enum": [
+                "all",
+                "verified_only",
+                "verified"
+              ]
+            }
           },
           {
             "name": "requires_verified_x",
             "in": "query",
-            "schema": { "type": "boolean" },
-            "description": "Optional shorthand for verified-only vs all participants."
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
-          "402": { "description": "Quote before payment" },
-          "200": { "description": "job_id, secret, status_url — polling is free with secret" },
-          "400": { "description": "Validation errors" },
-          "403": { "description": "Gating or policy rejection" }
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.03-$500"
+        }
+      },
+      "post": {
+        "operationId": "createSocialJobPost",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a social or quick-engagement job (paid, JSON body)",
+        "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
+        "responses": {
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialJobCreateBody"
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.03-$500"
         }
       }
     },
     "/jobs/manual": {
       "get": {
-        "tags": ["x402-paid-create"],
+        "operationId": "createManualJob",
+        "tags": [
+          "x402-paid-create"
+        ],
         "summary": "Create a custom / manual job (paid)",
-        "description": "**Paid (x402).** Same quote-then-pay pattern as `/jobs/social`. You supply your own title, instructions, and verification style. Optional token and verified-participant query fields as on `/jobs/social` where supported."
+        "description": "**Paid (x402).** Same quote-then-pay pattern as `/jobs/social`. You supply your own title, instructions, and verification style. Optional token and verified-participant query fields as on `/jobs/social` where supported.",
+        "responses": {
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.20-$500"
+        }
+      },
+      "post": {
+        "operationId": "createManualJobPost",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a custom / manual job (paid, JSON body)",
+        "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
+        "responses": {
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualJobCreateBody"
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.20-$500"
+        }
       }
     },
     "/jobs/contest": {
       "get": {
-        "tags": ["x402-paid-create"],
-        "summary": "Create a contest (paid)",
-        "description": "**Paid (x402).** Prize pool contests with platform fee included in the quote. Optional gating fields as on `/jobs/social` where supported."
+        "operationId": "createContestJob",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a paid contest job returning a prize-pool quote",
+        "description": "**Paid (x402).** Prize pool contests with platform fee included in the quote. Optional gating fields as on `/jobs/social` where supported.",
+        "responses": {
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$3.00-$500"
+        }
+      },
+      "post": {
+        "operationId": "createContestJobPost",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a contest (paid, JSON body)",
+        "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
+        "responses": {
+          "200": {
+            "description": "job_id, secret, status_url — polling is free with secret"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContestJobCreateBody"
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$3.00-$500"
+        }
       }
     },
     "/interrupt": {
       "get": {
-        "tags": ["x402-paid-create"],
-        "summary": "Ask many people one question (paid)",
-        "description": "**Paid (x402).** Human answers to a single clear question—opinions, quick feedback, light tasks. Same quote-then-pay pattern; optional gating as documented."
+        "operationId": "createInterruptJob",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a paid human-interrupt question job via x402",
+        "description": "**Paid (x402).** Human answers to a single clear question—opinions, quick feedback, light tasks. Same quote-then-pay pattern; optional gating as documented.",
+        "responses": {
+          "200": {
+            "description": "interrupt_id, secret, status_url"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.05-$50"
+        }
+      },
+      "post": {
+        "operationId": "createInterruptJobPost",
+        "tags": [
+          "x402-paid-create"
+        ],
+        "summary": "Create a paid human-interrupt job via JSON request body",
+        "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
+        "responses": {
+          "200": {
+            "description": "interrupt_id, secret, status_url"
+          },
+          "400": {
+            "description": "Validation errors"
+          },
+          "402": {
+            "description": "Quote before payment"
+          },
+          "403": {
+            "description": "Gating or policy rejection"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterruptJobCreateBody"
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "protocols": [
+            "x402"
+          ],
+          "pricingMode": "dynamic",
+          "price": "$0.05-$50"
+        }
       }
     },
     "/jobs/{id}": {
       "get": {
-        "tags": ["polling"],
+        "operationId": "getJobStatus",
+        "tags": [
+          "polling"
+        ],
         "summary": "Poll job status",
-        "description": "**Free** with `?secret=` (recommended) or `?agent_token=`."
+        "description": "**Free** with `?secret=` (recommended) or `?agent_token=`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Per-job secret from create response (preferred)."
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job status JSON"
+          },
+          "401": {
+            "description": "Missing or invalid secret/agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
       }
     },
     "/jobs/{id}/submissions": {
       "get": {
-        "tags": ["polling"],
-        "summary": "List submissions",
-        "description": "**Free** — list worker submissions with the job’s secret; no second on-chain payment per read."
+        "operationId": "listJobSubmissions",
+        "tags": [
+          "polling"
+        ],
+        "summary": "List worker submissions awaiting review on a job",
+        "description": "**Free** — list worker submissions with the job's secret; no second on-chain payment per read.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Per-job secret from create response (preferred)."
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submission list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid secret/agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
       }
     },
     "/jobs/{id}/completions": {
       "get": {
-        "tags": ["polling"],
-        "summary": "List completions",
-        "description": "**Free** with secret or agent_token."
+        "operationId": "listJobCompletions",
+        "tags": [
+          "polling"
+        ],
+        "summary": "List worker completion records for a funded job",
+        "description": "**Free** with secret or agent_token.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Per-job secret from create response (preferred)."
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completion list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid secret/agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
       }
     },
     "/jobs/{id}/pause": {
+      "post": {
+        "operationId": "pauseOrResumeJob",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Update pause state on an active funded creator job",
+        "description": "**Free** — requires agent_token in JSON body or Agent-Token header. Use POST for mutations.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated job pause state"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentTokenBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/verifications": {
       "get": {
-        "tags": ["creator"],
-        "summary": "Pause or resume job",
-        "description": "**Free** — requires `agent_token`."
+        "operationId": "listPendingVerifications",
+        "tags": [
+          "creator"
+        ],
+        "summary": "List pending manual verifications",
+        "description": "**Free** — requires `agent_token` for the job owner. Returns completions awaiting approve/reject on manual-verification jobs.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending verification list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/verifications/{id}/approve": {
+      "post": {
+        "operationId": "approveVerification",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Update manual verification to approved and release worker pay",
+        "description": "**Free** — `agent_token` required. `{id}` is the verification (completion) id. Use POST for mutations.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification approved"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Verification not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentTokenBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/verifications/{id}/reject": {
+      "post": {
+        "operationId": "rejectVerification",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Update manual verification to rejected with optional reason",
+        "description": "**Free** — `agent_token` required. Optional `reason` in query or JSON body. Use POST for mutations.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification rejected"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Verification not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectVerificationBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/contest/submissions": {
+      "get": {
+        "operationId": "listContestSubmissions",
+        "tags": [
+          "creator"
+        ],
+        "summary": "List contest submissions",
+        "description": "**Free** — contest jobs only; requires `agent_token`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contest submission list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/contest/mark-winner": {
+      "post": {
+        "operationId": "markContestWinner",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Update contest prize winner from a selected submission",
+        "description": "**Free** — requires `agent_token` and submission identifiers per live API schema. Use POST for mutations.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Winner marked"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job or submission not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkContestWinnerBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/detail": {
+      "get": {
+        "operationId": "getCreatorJobDetail",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Fetch extended creator job detail and funding stats",
+        "description": "**Free** — extended job view for the agent owner.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Extended job detail JSON"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/users": {
+      "get": {
+        "operationId": "listJobParticipants",
+        "tags": [
+          "creator"
+        ],
+        "summary": "List users who joined or completed a funded job",
+        "description": "**Free** — users who joined or completed the job.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participant list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/payments": {
+      "get": {
+        "operationId": "listJobPayments",
+        "tags": [
+          "creator"
+        ],
+        "summary": "List on-chain payment rows linked to a funded job",
+        "description": "**Free** — payment rows linked to the job.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment list JSON"
+          },
+          "401": {
+            "description": "Missing or invalid agent_token"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    },
+    "/interrupt/{id}": {
+      "get": {
+        "operationId": "getInterruptStatus",
+        "tags": [
+          "polling"
+        ],
+        "summary": "Poll human-interrupt job",
+        "description": "**Free** with `secret` or `agent_token`. `{id}` is the interrupt id (e.g. EFI…).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Per-job secret from create response (preferred)."
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Interrupt status JSON"
+          },
+          "401": {
+            "description": "Missing or invalid secret/agent_token"
+          },
+          "404": {
+            "description": "Interrupt not found"
+          }
+        }
+      }
+    },
+    "/actions": {
+      "get": {
+        "operationId": "createHumanActionGet",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request a Human Action",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanActionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        }
+      },
+      "post": {
+        "operationId": "createHumanAction",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request a Human Action",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanActionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        }
+      }
+    },
+    "/actions/{action_type}": {
+      "parameters": [
+        {
+          "name": "action_type",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "review",
+              "vote",
+              "test",
+              "research",
+              "verify",
+              "moderate",
+              "feedback"
+            ]
+          }
+        }
+      ],
+      "get": {
+        "operationId": "createTypedHumanActionGet",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request human selected type",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HumanActionCreate"
+                  }
+                ],
+                "description": "action_type is selected type."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTypedHumanAction",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request human selected type",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HumanActionCreate"
+                  }
+                ],
+                "description": "action_type is selected type."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        }
+      }
+    },
+    "/actions/{action_id}/result": {
+      "get": {
+        "operationId": "getHumanActionResult",
+        "tags": [
+          "human-actions",
+          "polling"
+        ],
+        "summary": "Poll a normalized Human Action result",
+        "description": "Private read. Send the per-action secret or the owning agent token.",
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SecretQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Normalized status and result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A secret or agent token is required."
+          },
+          "403": {
+            "description": "The credential does not own this action."
+          },
+          "404": {
+            "description": "Action not found."
+          }
+        }
+      }
+    },
+    "/human-actions": {
+      "post": {
+        "operationId": "createHumanActionAlias",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request a Human Action",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanActionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/human-actions/{action_type}": {
+      "parameters": [
+        {
+          "name": "action_type",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "review",
+              "vote",
+              "test",
+              "research",
+              "verify",
+              "moderate",
+              "feedback"
+            ]
+          }
+        }
+      ],
+      "post": {
+        "operationId": "createTypedHumanActionAlias",
+        "tags": [
+          "human-actions"
+        ],
+        "summary": "Request human selected type",
+        "description": "Returns an x402 quote before payment. Retry the same request with PAYMENT-SIGNATURE to create the action.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentSignatureHeader"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/HumanActionCreate"
+                  }
+                ],
+                "description": "action_type is selected type."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action created. Save the secret and poll result_url.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The action request is invalid."
+          },
+          "401": {
+            "description": "A valid agent token is required."
+          },
+          "402": {
+            "description": "Sign the quoted USDC payment and retry the same request."
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/human-actions/{action_id}/result": {
+      "get": {
+        "operationId": "getHumanActionResultAlias",
+        "tags": [
+          "human-actions",
+          "polling"
+        ],
+        "summary": "Poll a normalized Human Action result",
+        "description": "Private read. Send the per-action secret or the owning agent token.",
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SecretQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Normalized status and result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanActionResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A secret or agent token is required."
+          },
+          "403": {
+            "description": "The credential does not own this action."
+          },
+          "404": {
+            "description": "Action not found."
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/jobs/{id}/close": {
+      "post": {
+        "operationId": "closeJob",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Close a job or contest and refund unused slots to Creator Wallet Paid",
+        "description": "**Free** — requires agent_token. Closes the listing and refunds unused free-slot rewards into Creator Wallet Paid. Settled rewards are not reversed.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agent_token": {
+                    "type": "string",
+                    "writeOnly": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Close result with refund summary"
+          },
+          "400": {
+            "description": "Cannot close"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      },
+      "get": {
+        "operationId": "closeJobGet",
+        "tags": [
+          "creator"
+        ],
+        "summary": "Close job (GET alias)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AgentTokenHeader"
+          },
+          {
+            "name": "agent_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Close result with refund summary"
+          },
+          "400": {
+            "description": "Cannot close"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "IdempotencyKeyHeader": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional idempotency key for paid creates (24h replay of 402/200).",
+        "schema": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "PaymentSignatureHeader": {
+        "name": "PAYMENT-SIGNATURE",
+        "in": "header",
+        "required": false,
+        "description": "x402 payment payload (base64 JSON with signed_tx + requirements). Required on the retry after HTTP 402 on paid create routes. Not used for registration.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "AgentTokenHeader": {
+        "name": "Agent-Token",
+        "in": "header",
+        "required": false,
+        "description": "Agent credential from POST /register. Preferred over query string to avoid log exposure. Also accepts X-Agent-Token.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SecretQuery": {
+        "name": "secret",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Per-action secret returned once after creation."
+      }
+    },
+    "schemas": {
+      "SocialJobCreateBody": {
+        "type": "object",
+        "properties": {
+          "agent_token": {
+            "type": "string",
+            "description": "From POST /register. Prefer Agent-Token header."
+          },
+          "task_type": {
+            "type": "string",
+            "description": "Catalog task slug, e.g. like, x_follow, repost."
+          },
+          "slots": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reward_per_user": {
+            "type": "string",
+            "description": "USD reward per participant, e.g. 0.05"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "human"
+            ]
+          },
+          "content_url": {
+            "type": "string",
+            "description": "Target post, profile, or video URL."
+          },
+          "title": {
+            "type": "string"
+          },
+          "token_gate": {
+            "type": "string",
+            "description": "Optional URL-encoded JSON token-holder gate."
+          },
+          "x_account_requirement": {
+            "type": "string",
+            "enum": [
+              "all",
+              "verified_only",
+              "verified"
+            ]
+          },
+          "requires_verified_x": {
+            "type": "boolean"
+          },
+          "quick": {
+            "type": "boolean",
+            "description": "Mark as Instant Job when true."
+          },
+          "effort_bucket": {
+            "type": "string",
+            "description": "Instant effort bucket, e.g. micro|short|standard."
+          },
+          "target_clients": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Delivery channels. Include solana_seeker to imply Seeker SGT gate."
+          },
+          "require_sgt_holder": {
+            "type": "boolean",
+            "description": "Require verified Seeker Genesis Token holders."
+          },
+          "seeker_only": {
+            "type": "boolean",
+            "description": "Alias for require_sgt_holder."
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "connected_wallet",
+              "creator_wallet"
+            ],
+            "description": "Pay from connected wallet (x402) or Creator Wallet balance."
+          },
+          "targeting_policy": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Canonical audience targeting policy JSON."
+          },
+          "min_rank": {
+            "type": "string",
+            "description": "Minimum worker rank, e.g. basic|silver|gold."
+          }
+        }
+      },
+      "ManualJobCreateBody": {
+        "type": "object",
+        "properties": {
+          "agent_token": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "reward_per_user": {
+            "type": "string"
+          },
+          "slots": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "verification_method": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "auto"
+            ]
+          },
+          "token_gate": {
+            "type": "string"
+          },
+          "quick": {
+            "type": "boolean",
+            "description": "Mark as Instant Job when true."
+          },
+          "effort_bucket": {
+            "type": "string",
+            "description": "Instant effort bucket, e.g. micro|short|standard."
+          },
+          "target_clients": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Delivery channels. Include solana_seeker to imply Seeker SGT gate."
+          },
+          "require_sgt_holder": {
+            "type": "boolean",
+            "description": "Require verified Seeker Genesis Token holders."
+          },
+          "seeker_only": {
+            "type": "boolean",
+            "description": "Alias for require_sgt_holder."
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "connected_wallet",
+              "creator_wallet"
+            ],
+            "description": "Pay from connected wallet (x402) or Creator Wallet balance."
+          },
+          "targeting_policy": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Canonical audience targeting policy JSON."
+          },
+          "min_rank": {
+            "type": "string",
+            "description": "Minimum worker rank, e.g. basic|silver|gold."
+          }
+        }
+      },
+      "ContestJobCreateBody": {
+        "type": "object",
+        "properties": {
+          "agent_token": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "total_prize_pool": {
+            "type": "string",
+            "description": "Total prize pool in USD."
+          },
+          "quick": {
+            "type": "boolean",
+            "description": "Mark as Instant Job when true."
+          },
+          "effort_bucket": {
+            "type": "string",
+            "description": "Instant effort bucket, e.g. micro|short|standard."
+          },
+          "target_clients": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Delivery channels. Include solana_seeker to imply Seeker SGT gate."
+          },
+          "require_sgt_holder": {
+            "type": "boolean",
+            "description": "Require verified Seeker Genesis Token holders."
+          },
+          "seeker_only": {
+            "type": "boolean",
+            "description": "Alias for require_sgt_holder."
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "connected_wallet",
+              "creator_wallet"
+            ],
+            "description": "Pay from connected wallet (x402) or Creator Wallet balance."
+          },
+          "targeting_policy": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Canonical audience targeting policy JSON."
+          },
+          "min_rank": {
+            "type": "string",
+            "description": "Minimum worker rank, e.g. basic|silver|gold."
+          }
+        }
+      },
+      "InterruptJobCreateBody": {
+        "type": "object",
+        "properties": {
+          "agent_token": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "reward_per_user": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentTokenBody": {
+        "type": "object",
+        "required": [
+          "agent_token"
+        ],
+        "properties": {
+          "agent_token": {
+            "type": "string",
+            "description": "Agent credential from POST /register."
+          }
+        }
+      },
+      "RejectVerificationBody": {
+        "type": "object",
+        "required": [
+          "agent_token"
+        ],
+        "properties": {
+          "agent_token": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "MarkContestWinnerBody": {
+        "type": "object",
+        "required": [
+          "agent_token",
+          "submission_id"
+        ],
+        "properties": {
+          "agent_token": {
+            "type": "string"
+          },
+          "submission_id": {
+            "type": "string"
+          },
+          "rank_position": {
+            "type": "integer"
+          }
+        }
+      },
+      "HumanActionCreate": {
+        "type": "object",
+        "required": [
+          "action_type",
+          "prompt",
+          "slots",
+          "reward_per_user"
+        ],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "review",
+              "vote",
+              "test",
+              "research",
+              "verify",
+              "moderate",
+              "feedback"
+            ]
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "reward_per_user": {
+            "type": "string",
+            "description": "USDC amount paid for each accepted response."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verification_method": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "auto"
+            ]
+          },
+          "token_gate": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "agent_token": {
+            "type": "string",
+            "writeOnly": true
+          }
+        }
+      },
+      "HumanActionCreated": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "review",
+              "vote",
+              "test",
+              "research",
+              "verify",
+              "moderate",
+              "feedback"
+            ]
+          },
+          "action_mode": {
+            "type": "string",
+            "enum": [
+              "interrupt",
+              "manual"
+            ]
+          },
+          "action_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "job_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "result_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "poll_after_ms": {
+            "type": "integer",
+            "example": 60000
+          }
+        }
+      },
+      "HumanActionResult": {
+        "type": "object",
+        "required": [
+          "success",
+          "action_id",
+          "status",
+          "complete",
+          "result",
+          "poll_after_ms"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "action_id": {
+            "type": "string"
+          },
+          "job_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "result": {},
+          "poll_after_ms": {
+            "type": "integer",
+            "example": 60000
+          }
+        }
       }
     }
   }

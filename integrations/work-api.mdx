@@ -25,6 +25,9 @@ Typical capabilities exposed in the explorer include:
 
 - **Discovery**: fetch the x402 payment descriptor for this API host (for client tooling and integrations).  
 - **Job creation**: create **social** and other paid job types with structured JSON bodies.  
+- **Creator Wallet**: `GET /work/v1/creator-wallet` returns **free** Listing Credits and **paid** top-up balance. Prefer topping up (x402 → paid bucket) then creating with `payment_method=creator_wallet`, or pay create directly via connected-wallet x402 (`payment_method=connected_wallet`). Platform fee is **waived only when 100% of the listing main cost is paid from free credits**.  
+- **Close + refund**: `POST /work/v1/jobs/{id}/close` marks the job **`completed`**, shrinks capacity to reserved slots, and refunds **only free (uncommitted) slots** to Creator Wallet **paid_balance** (`free_slots × base_reward`). Reserved in-flight slots are not refunded until released.  
+- **Instant Jobs**: create payloads may include `quick` / `is_quick` and `effort_bucket` (`30s` | `1m` | `3m` | `5m` | `15m`), plus optional `target_clients` (e.g. `["solana_seeker"]`).  
 - **Optional token rules**: paid job bodies may include a `token_gate` object so only participants who hold a given Solana token (by amount or USD value) can take the job; your **linked developer wallet** must meet the platform EARNFI threshold or the API rejects the request.  
 - **Optional verified X**: the same JSON body may include **`x_account_requirement`** (`all` or `verified_only`) and/or **`requires_verified_x`** (`true` / `false`, shorthand for verified-only vs all). That matches the in-app choice for **verified X accounts only**. See **[X connection & verified accounts](/safety/x-verification)** for what participants see.  
 - **Management**: list and manage jobs using your Work API key (as documented in the explorer).  

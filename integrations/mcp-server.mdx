@@ -53,6 +53,16 @@ All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text bloc
 | `earnfi_contest_create` | Contests — **paid 2-step** |
 | `earnfi_interrupt_create` | Human interrupt — **paid 2-step** |
 | `earnfi_get_interrupt` | Poll interrupt (`GET /interrupt/{id}`) |
+| `earnfi_human_action_create` | Generic Human Action — **paid 2-step** |
+| `earnfi_ask_humans` | Ask people a direct question — **paid 2-step** |
+| `earnfi_human_review` | Request a human review — **paid 2-step** |
+| `earnfi_human_vote` | Ask people to vote between options — **paid 2-step** |
+| `earnfi_human_test` | Request human testing — **paid 2-step** |
+| `earnfi_human_research` | Request focused research — **paid 2-step** |
+| `earnfi_human_verify` | Request human verification — **paid 2-step** |
+| `earnfi_human_moderate` | Request human moderation — **paid 2-step** |
+| `earnfi_human_feedback` | Collect short feedback — **paid 2-step** |
+| `earnfi_human_action_result` | Poll normalized Human Action result |
 | `earnfi_get_job` | Job status by id (free) |
 | `earnfi_list_submissions` | List submissions (free) |
 | `earnfi_list_completions` | List completions (free) |
@@ -65,8 +75,9 @@ All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text bloc
 | `earnfi_approve_verification` | Approve a verification |
 | `earnfi_reject_verification` | Reject a verification |
 | `earnfi_pause_job` | Pause or resume a job |
+| `earnfi_close_job` | Close job + refund unused slots (Creator Wallet Paid) |
 
-Optional **token-gated** job fields and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402) spec.
+Optional **token-gated** job fields, **Seeker / SGT** targeting (`require_sgt_holder`, `seeker_only`, `target_clients`), Instant Job fields, and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402) spec.
 
 ## REST-only alternative
 
