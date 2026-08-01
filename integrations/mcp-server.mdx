@@ -15,57 +15,110 @@ description: "Connect EarnFi to AI products that support the Model Context Proto
 
 1. In your AI product, add a **remote MCP server** using your EarnFi app hostname, for example **`https://app.earnfi.fun/mcp`**.
 2. Follow that product’s steps for transport, authentication, and session setup.
-3. **`agent_token` is optional** on paid creates — omit for the 402 quote; save it from the success response when newly bound. Set **`EARNFI_AGENT_TOKEN`** if you registered first, or pass `agent_token` on tool calls.
+3. **Pay-first: `agent_token` is optional everywhere**, including on paid creates — omit it for the 402 quote and the agent binds from the paying wallet on settle; save the returned `agent_token` when newly bound. Registering first (`earnfi_register` / `earnfi_okx_register`) is optional and only sets a named identity ahead of time. Set **`EARNFI_AGENT_TOKEN`** if you registered, or pass `agent_token` on tool calls.
 
 EarnFi does **not** charge a separate fee for MCP access. Normal network and infrastructure costs on your side still apply.
 
-## Paid job creates
+<Note>
+The MCP surface is for **agents**. If you're integrating as a **partner platform** (API keys, `partner_source` attribution, server-to-server billing), use the **Partner REST API** instead of MCP — see the partner OpenAPI spec and skill file. There are no partner-admin tools exposed over MCP.
+</Note>
 
-Paid tools use **one MCP tool, two calls** (optional `payment_signature`):
+## Paid job creates (pay-first, one tool, two calls)
+
+Paid tools use **one MCP tool, two calls** (optional `payment_signature`, optional `agent_token`):
 
 | Step | What you do |
 |------|-------------|
-| 1 | Call e.g. `earnfi_social_create` **without** `payment_signature` |
+| 1 | Call e.g. `earnfi_social_create` **without** `payment_signature` (and without `agent_token` if you haven't registered) |
 | 2 | MCP returns structured JSON: `requires_payment: true`, `accepts`, `resource`, `total_cost`, `next_step` |
-| 3 | Sign USDC with `@x402/fetch`, your wallet, or a script (same as REST) |
+| 3 | Sign USDC (Solana rail) or USDT0 (OKX rail) with `@x402/fetch`, your wallet, or a script (same as REST) |
 | 4 | Call the **same tool** again with the **same parameters** plus `payment_signature` |
-| 5 | MCP returns `success: true`, `job_id`, `secret`, `agent_token` (when newly bound), polling URLs, etc. |
+| 5 | MCP returns `success: true`, `job_id`, `secret`, `agent_token` (when newly bound from the paying wallet), polling URLs, etc. |
 
-`payment_signature` is the **`PAYMENT-SIGNATURE`** header value (base64 JSON with `signed_tx` and `requirements`). It is **not** the Ed25519 signature used for `POST /register`.
+`payment_signature` is the **`PAYMENT-SIGNATURE`** header value (base64 JSON with `signed_tx` and `requirements` on Solana, or the EVM x402 paymentPayload on OKX). It is **not** the signature used for `POST /register` / `POST /okx/v1/register`.
 
-The MCP process does **not** store your private key. Signing always happens on your client or local automation.
+The MCP process does **not** store your private key. **Signing always happens on your client** or local automation — never inside the MCP server.
 
 ## Response format
 
 All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text blocks), so agents can parse `requires_payment` and `accepts` directly.
 
-## Available tools
+## Available tools (v1.5, 60 tools)
+
+### Discovery / health
 
 | Tool | Purpose |
 |------|--------|
 | `earnfi_agent_catalog` | Job types and execution policy (`GET /catalog`) |
+| `earnfi_payment_rails` | Dual-rail registry (`GET /rails`) |
 | `earnfi_agent_x402` | x402 discovery metadata (`GET /x402`) |
-| `earnfi_register_challenge` | Registration challenge (`GET /register/challenge`) |
-| `earnfi_register` | Complete registration (`POST /register`) — returns `agent_token` |
-| `earnfi_register_info` | Registration + paid-create flow summary |
-| `earnfi_social_create` | Social / repost / like jobs — **paid 2-step** |
-| `earnfi_manual_create` | Manual / custom jobs — **paid 2-step** |
-| `earnfi_contest_create` | Contests — **paid 2-step** |
-| `earnfi_interrupt_create` | Human interrupt — **paid 2-step** |
+| `earnfi_health` | Combined health probe (`GET /rails` + `GET /catalog`) |
+| `earnfi_okx_catalog` / `earnfi_okx_info` / `earnfi_okx_health` | OKX rail discovery / health (A2MCP) |
+
+### Registration (optional — pay-first works without these)
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_register_challenge` | Solana registration challenge (`GET /register/challenge`) |
+| `earnfi_register` | Complete Solana Ed25519 registration (`POST /register`) — returns `agent_token` |
+| `earnfi_okx_register_challenge` | OKX EVM `0x` challenge (`GET /okx/v1/register/challenge`) |
+| `earnfi_okx_register` | OKX EIP-191 `personal_sign` register — returns `agent_token` |
+| `earnfi_register_info` | Pay-first + optional-register flow summary |
+
+### Paid creates — Solana USDC (agent_token optional, 2-step)
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_social_create` | Social / repost / like jobs |
+| `earnfi_manual_create` | Manual / custom jobs |
+| `earnfi_contest_create` | Contests |
+| `earnfi_interrupt_create` | Human interrupt |
+| `earnfi_human_action_create` | Generic Human Action (ask/review/vote/test/research/verify/moderate/feedback) |
+| `earnfi_ask_humans` / `earnfi_human_review` / `earnfi_human_vote` / `earnfi_human_test` / `earnfi_human_research` / `earnfi_human_verify` / `earnfi_human_moderate` / `earnfi_human_feedback` | Convenience Human Action creates |
+
+### Paid creates — OKX X Layer USDT0 (agent_token optional, 2-step)
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_okx_social_create` | Social / repost / like jobs |
+| `earnfi_okx_manual_create` | Manual / custom jobs |
+| `earnfi_okx_contest_create` | Contests |
+| `earnfi_okx_interrupt_create` | Human interrupt |
+| `earnfi_okx_ask_humans` | Ask a direct question |
+| `earnfi_okx_human_action_create` | Generic Human Action |
+| `earnfi_okx_human_review` / `earnfi_okx_human_vote` / `earnfi_okx_human_test` / `earnfi_okx_human_research` / `earnfi_okx_human_verify` / `earnfi_okx_human_moderate` / `earnfi_okx_human_feedback` | Convenience Human Action creates |
+
+### Polling (free with `secret` or `agent_token`)
+
+| Tool | Purpose |
+|------|--------|
 | `earnfi_get_interrupt` | Poll interrupt (`GET /interrupt/{id}`) |
-| `earnfi_human_action_create` | Generic Human Action — **paid 2-step** |
-| `earnfi_ask_humans` | Ask people a direct question — **paid 2-step** |
-| `earnfi_human_review` | Request a human review — **paid 2-step** |
-| `earnfi_human_vote` | Ask people to vote between options — **paid 2-step** |
-| `earnfi_human_test` | Request human testing — **paid 2-step** |
-| `earnfi_human_research` | Request focused research — **paid 2-step** |
-| `earnfi_human_verify` | Request human verification — **paid 2-step** |
-| `earnfi_human_moderate` | Request human moderation — **paid 2-step** |
-| `earnfi_human_feedback` | Collect short feedback — **paid 2-step** |
 | `earnfi_human_action_result` | Poll normalized Human Action result |
 | `earnfi_get_job` | Job status by id (free) |
 | `earnfi_list_submissions` | List submissions (free) |
 | `earnfi_list_completions` | List completions (free) |
+
+### Agent profile & identity (agent_token)
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_get_profile` | Get the current agent profile (`GET /profile`) |
+| `earnfi_update_profile` | Update the agent profile (`POST /profile`) |
+| `earnfi_import_identity` | Link an external identity/credential (`POST /profile/import-identity`) |
+| `earnfi_sync_said` | Sync a self-addressing identifier (`POST /profile/sync-said`) |
+
+### Agent lookups & contests
+
+| Tool | Purpose |
+|------|--------|
+| `earnfi_list_agent_jobs` | Jobs associated with an agent (`GET /agents/{agent_id}/jobs`) |
+| `earnfi_get_agent_usage` | Usage / spend stats for an agent (`GET /agents/{agent_id}/usage`) |
+| `earnfi_contest_leaderboard` | Ranked contest standings (`GET /jobs/{id}/contest/leaderboard`) |
+
+### Creator controls (agent_token)
+
+| Tool | Purpose |
+|------|--------|
 | `earnfi_get_job_detail` | Creator job detail (`agent_token`) |
 | `earnfi_get_job_users` | Creator job participants (`agent_token`) |
 | `earnfi_get_job_payments` | Creator job payments (`agent_token`) |
@@ -77,11 +130,11 @@ All Agent API tools return **pretty-printed JSON** (not raw `HTTP 402` text bloc
 | `earnfi_pause_job` | Pause or resume a job |
 | `earnfi_close_job` | Close job + refund unused slots (Creator Wallet Paid) |
 
-Optional **token-gated** job fields, **Seeker / SGT** targeting (`require_sgt_holder`, `seeker_only`, `target_clients`), Instant Job fields, and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402) spec.
+Optional **token-gated** job fields (`token_gate`, or flat `token_gate_enabled` / `token_mint` / `min_token_amount` / `min_token_usd`), optional `agent_name` / `idempotency_key` / `partner_source` / `partner_metadata`, **Seeker / SGT** targeting (`require_sgt_holder`, `seeker_only`, `target_clients`), Instant Job fields, and **verified X** requirements are documented in the [Agent API](/integrations/agent-api) and [OpenAPI (x402)](/integrations/openapi-x402) spec.
 
 ## REST-only alternative
 
-You can skip MCP and use the Agent API directly: first `GET` without payment → **402** → sign → retry with `PAYMENT-SIGNATURE`. MCP wraps the same behavior with structured JSON.
+You can skip MCP and use the Agent API directly: first `GET` without payment → **402** (agent_token optional) → sign → retry with `PAYMENT-SIGNATURE`. MCP wraps the same behavior with structured JSON.
 
 ## Related resources
 
