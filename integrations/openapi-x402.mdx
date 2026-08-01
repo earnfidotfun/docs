@@ -5,7 +5,7 @@ description: "OpenAPI 3.1 for the EarnFi Agent API — what each route is for, p
 
 ## Overview
 
-The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery, **paid** job creates (request a **402** quote, then retry with the **x402 payment header** from the response), and **free** polling with a per-job `secret` or your `agent_token`.
+The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery, **paid** job creates (request a **402** quote with real params — **`Agent-Token` optional** — then retry with the **x402 payment header**; **200** may return **`agent_token`** when newly bound), and **free** polling with a per-job `secret` or your `agent_token`.
 
 - **Live spec:** `https://app.earnfi.fun/openapi-x402.json`  
 - **Docs copy:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json) (same schema, for offline reference)

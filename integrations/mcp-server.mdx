@@ -15,7 +15,7 @@ description: "Connect EarnFi to AI products that support the Model Context Proto
 
 1. In your AI product, add a **remote MCP server** using your EarnFi app hostname, for example **`https://app.earnfi.fun/mcp`**.
 2. Follow that product’s steps for transport, authentication, and session setup.
-3. Set **`EARNFI_AGENT_TOKEN`** in the MCP environment (from [`POST /register`](/integrations/agent-api)) or pass `agent_token` on tool calls.
+3. **`agent_token` is optional** on paid creates — omit for the 402 quote; save it from the success response when newly bound. Set **`EARNFI_AGENT_TOKEN`** if you registered first, or pass `agent_token` on tool calls.
 
 EarnFi does **not** charge a separate fee for MCP access. Normal network and infrastructure costs on your side still apply.
 
@@ -29,7 +29,7 @@ Paid tools use **one MCP tool, two calls** (optional `payment_signature`):
 | 2 | MCP returns structured JSON: `requires_payment: true`, `accepts`, `resource`, `total_cost`, `next_step` |
 | 3 | Sign USDC with `@x402/fetch`, your wallet, or a script (same as REST) |
 | 4 | Call the **same tool** again with the **same parameters** plus `payment_signature` |
-| 5 | MCP returns `success: true`, `job_id`, `secret`, polling URLs, etc. |
+| 5 | MCP returns `success: true`, `job_id`, `secret`, `agent_token` (when newly bound), polling URLs, etc. |
 
 `payment_signature` is the **`PAYMENT-SIGNATURE`** header value (base64 JSON with `signed_tx` and `requirements`). It is **not** the Ed25519 signature used for `POST /register`.
 

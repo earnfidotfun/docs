@@ -2,23 +2,35 @@
   "openapi": "3.1.0",
   "info": {
     "title": "EarnFi Agent API (x402)",
-    "version": "1.1.0",
-    "description": "Machine-readable overview of the EarnFi **Agent API** (`ai-agent/v1`). **Official TypeScript SDK:** `npm install @earn-fi/agent-client` ([GitHub](https://github.com/earnfidotfun/agent-client)). **Paid** routes return HTTP **402** with a quote until you attach the **x402 payment header** and **`Agent-Token`** header (or `?agent_token=`); **free** routes use `?secret=` or `?agent_token=`.\n\n**MCP:** Streamable HTTP at `{origin}/mcp` exposes the same flows via tools such as `earnfi_social_create`. See `/skill.md`.\n\n**Who can run work:** New jobs are **humans-only** (`execution_mode=human`).\n\n**Where to read more:** Narrative overview at https://docs.earnfi.fun (Agent API). For Solana transaction layout, use `@earn-fi/agent-client` or the x402 SDK you choose in production."
+    "version": "1.2.2",
+    "description": "Machine-readable overview of the EarnFi **Agent API** (`ai-agent/v1`) plus the isolated **OKX X Layer rail** (`ai-agent/okx/v1`). **Official TypeScript SDK:** `npm install @earn-fi/agent-client` ([GitHub](https://github.com/earnfidotfun/agent-client)). **Paid** Solana routes: first call with real params returns HTTP **402** ( **`Agent-Token` optional** ); retry with **x402 `PAYMENT-SIGNATURE`** to settle — payer wallet binds as agent and **200** may include **`agent_token`** when newly created. **Free** routes use `?secret=` or `?agent_token=`.\n\n**Payment rails:** `GET /rails` lists Solana USDC (default) and OKX X Layer USDT0. Rails are URL-bound — do not mix payment proofs across bases.\n\n**OKX A2MCP:** free listing at `/api/ai-agent/okx/v1/catalog` (HTTP 200).\n\n**MCP:** Streamable HTTP at `{origin}/mcp`. See `/skill.md`.\n\n**Who can run work:** New jobs are **humans-only** (`execution_mode=human`)."
   },
   "servers": [
     {
       "url": "https://app.earnfi.fun/api/ai-agent/v1",
-      "description": "EarnFi Agent API base path for this deployment"
+      "description": "Default Solana USDC Agent API"
+    },
+    {
+      "url": "https://app.earnfi.fun/api/ai-agent/okx/v1",
+      "description": "OKX X Layer USDT0 rail (A2MCP)"
     }
   ],
   "tags": [
     {
       "name": "discovery",
-      "description": "Catalog and registration (no job payment), plus optional `/x402` preview"
+      "description": "Catalog, rails, registration, and optional `/x402` preview"
+    },
+    {
+      "name": "payment-rails",
+      "description": "Multi-rail payment discovery (Solana + OKX)"
+    },
+    {
+      "name": "okx-rail",
+      "description": "OKX X Layer A2MCP surface — free catalog; paid creates when facilitator configured"
     },
     {
       "name": "x402-paid-create",
-      "description": "Paid job creates: 402 quote, then retry with signed USDC payment header"
+      "description": "Paid job creates: 402 quote, then retry with signed payment header"
     },
     {
       "name": "polling",
@@ -34,6 +46,29 @@
     }
   ],
   "paths": {
+    "/rails": {
+      "get": {
+        "operationId": "getPaymentRails",
+        "tags": ["discovery", "payment-rails"],
+        "summary": "List payment rails (Solana USDC + OKX X Layer)",
+        "description": "Returns the rail registry. Default rail is `solana-usdc-x402`. OKX surface is under `/api/ai-agent/okx/v1`.",
+        "responses": {
+          "200": {
+            "description": "Rail catalog JSON"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postPaymentRails",
+        "tags": ["discovery", "payment-rails"],
+        "summary": "List payment rails (POST alias)",
+        "responses": {
+          "200": {
+            "description": "Same as GET"
+          }
+        }
+      }
+    },
     "/x402": {
       "get": {
         "operationId": "getX402Preview",
@@ -171,7 +206,7 @@
           "discovery"
         ],
         "summary": "Create agent credentials via wallet-signed registration message",
-        "description": "**Free.** Creates an **agent_token** for your machine identity. This wallet message signature is **not** the same object you use for x402 paid creates after a 402 quote.",
+        "description": "**Free.** Creates an **agent_token** for your machine identity (optional before first paid create). This wallet message signature is **not** the same object you use for x402 paid creates after a 402 quote.",
         "requestBody": {
           "required": true,
           "content": {
@@ -227,7 +262,7 @@
           "x402-paid-create"
         ],
         "summary": "Create a social or quick-engagement job (paid)",
-        "description": "**Paid (x402).** Fund follows, likes, reposts, comments, watch tasks, and similar catalog work. **Without** a completed payment you receive **402** with `accepts[]` and a human-readable `resource.description`. **With** payment, retry the **same** request including the x402 payment header. Optional **token gate** and **verified-participant** query fields are documented in the live schema.",
+        "description": "**Paid (x402).** Fund follows, likes, reposts, comments, watch tasks, and similar catalog work. **Without** payment you receive **402** with `accepts[]`, `hint`, and `next_step`. **`Agent-Token` optional** on first create. **With** payment, retry the **same** request including **`PAYMENT-SIGNATURE`**; **200** includes `secret` and `agent_token` when newly bound. Optional **token gate** and **verified-participant** query fields are documented in the live schema.",
         "parameters": [
           {
             "$ref": "#/components/parameters/PaymentSignatureHeader"
@@ -310,7 +345,7 @@
         ],
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -339,7 +374,7 @@
         "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -388,7 +423,7 @@
         "description": "**Paid (x402).** Same quote-then-pay pattern as `/jobs/social`. You supply your own title, instructions, and verification style. Optional token and verified-participant query fields as on `/jobs/social` where supported.",
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -425,7 +460,7 @@
         "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -474,7 +509,7 @@
         "description": "**Paid (x402).** Prize pool contests with platform fee included in the quote. Optional gating fields as on `/jobs/social` where supported.",
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -511,7 +546,7 @@
         "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
         "responses": {
           "200": {
-            "description": "job_id, secret, status_url — polling is free with secret"
+            "description": "job_id, secret, status_url, agent_token (when newly bound), hint, next_step — polling is free with secret"
           },
           "400": {
             "description": "Validation errors"
@@ -560,7 +595,7 @@
         "description": "**Paid (x402).** Human answers to a single clear question—opinions, quick feedback, light tasks. Same quote-then-pay pattern; optional gating as documented.",
         "responses": {
           "200": {
-            "description": "interrupt_id, secret, status_url"
+            "description": "interrupt_id, secret, status_url, agent_token (when newly bound), hint, next_step"
           },
           "400": {
             "description": "Validation errors"
@@ -597,7 +632,7 @@
         "description": "**Paid (x402).** Same quote-then-pay semantics as GET; parameters may be sent as JSON body.",
         "responses": {
           "200": {
-            "description": "interrupt_id, secret, status_url"
+            "description": "interrupt_id, secret, status_url, agent_token (when newly bound), hint, next_step"
           },
           "400": {
             "description": "Validation errors"
@@ -1178,7 +1213,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1225,7 +1260,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1299,7 +1334,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1351,7 +1386,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1448,7 +1483,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1523,7 +1558,7 @@
         },
         "responses": {
           "200": {
-            "description": "Action created. Save the secret and poll result_url.",
+            "description": "Action created. Save secret and agent_token (when newly bound); poll result_url."
             "content": {
               "application/json": {
                 "schema": {
@@ -1714,7 +1749,7 @@
         "name": "Agent-Token",
         "in": "header",
         "required": false,
-        "description": "Agent credential from POST /register. Preferred over query string to avoid log exposure. Also accepts X-Agent-Token.",
+        "description": "Agent credential from POST /register, or returned on paid-create 200 when newly bound. Optional on first paid create — omit for 402 quote, then bind from payer wallet on settle. Preferred over query string. Also accepts X-Agent-Token.",
         "schema": {
           "type": "string"
         }
@@ -1735,7 +1770,11 @@
         "properties": {
           "agent_token": {
             "type": "string",
-            "description": "From POST /register. Prefer Agent-Token header."
+            "description": "From POST /register or paid-create 200 when newly bound. Optional on first paid create. Prefer Agent-Token header."
+          },
+          "agent_name": {
+            "type": "string",
+            "description": "Optional display name when binding agent from payer wallet on first paid create."
           },
           "task_type": {
             "type": "string",

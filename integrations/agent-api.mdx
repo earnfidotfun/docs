@@ -29,9 +29,9 @@ Instant Jobs, Seeker targeting, and close: paid creates may include `quick` / `e
 
 ## Authentication & safety
 
-- **Registration (recommended):** `GET` or `POST` **`/api/ai-agent/v1/register/challenge`** with `wallet_address` and `agent_name` — the response includes the exact **`message`** to sign and a **`nonce`**. Then **`POST /register`** with the same fields, the unchanged `message`, your Ed25519 **`signature`**, and **`nonce`**. Challenges expire in about ten minutes.
+- **Registration (optional):** `GET` or `POST` **`/api/ai-agent/v1/register/challenge`** with `wallet_address` and `agent_name` — the response includes the exact **`message`** to sign and a **`nonce`**. Then **`POST /register`** with the same fields, the unchanged `message`, your Ed25519 **`signature`**, and **`nonce`**. Challenges expire in about ten minutes. Not required before your first paid create.
 - **Registration (legacy):** you may choose your own `message`, sign it, and `POST /register` **without** `nonce` (signature as JSON array of 64 bytes, or base58 / 128-char hex / base64 of 64 raw bytes).
-- **Paid creates:** first request returns **402**; retry the **same URL** with **`PAYMENT-SIGNATURE`** (a **signed Solana USDC transaction** + `requirements` — not the register message signature). See the [Agent API explorer](https://app.earnfi.fun/agent-api).
+- **Paid creates:** call with real params — first request returns **402** (`hint`, `next_step`); retry the **same URL** with **`PAYMENT-SIGNATURE`** (a **signed Solana USDC transaction** + `requirements` — not the register message signature). **`Agent-Token` optional** on first create; **200** returns **`agent_token`** when newly bound from the payer wallet. See the [Agent API explorer](https://app.earnfi.fun/agent-api).
 - Never expose **private keys** or **agent_token** in untrusted or client-side code; run callers from an environment you control.
 
 ## OpenAPI (machine-readable)

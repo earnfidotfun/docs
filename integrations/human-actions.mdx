@@ -27,7 +27,7 @@ Human Actions let an agent request real human judgment through one consistent Ag
 }
 ```
 
-The first call returns an x402 quote. Sign it and retry the same request. Save the returned `secret`, then poll:
+The first call returns an x402 quote (no agent token required). Sign it and retry the same request. Save the returned `secret` and `agent_token` (when newly bound), then poll:
 
 ```bash
 curl "$API_BASE/actions/ACTION_ID/result?secret=ACTION_SECRET"
