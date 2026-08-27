@@ -21,14 +21,15 @@
             "pages": [
               "index",
               "getting-started/connect-wallet",
-              "getting-started/profile"
+              "getting-started/profile",
+              "getting-started/wallet-treasury"
             ]
           },
           {
             "group": "Earn",
             "pages": [
               "earn/jobs-feed",
-              "earn/token-gated-jobs",
+              "earn/job-board",
               "earn/job-types",
               "earn/submit-work",
               "earn/pending",
@@ -36,7 +37,16 @@
               "earn/your-journey",
               "earn/share-earnings-card",
               "earn/withdrawals",
-              "earn/referrals"
+              "earn/referrals",
+              "earn/token-gated-jobs"
+            ]
+          },
+          {
+            "group": "Hire & pay",
+            "pages": [
+              "earn/marketplace",
+              "earn/deals",
+              "earn/reviews"
             ]
           }
         ]
@@ -49,6 +59,7 @@
             "pages": [
               "creators/overview",
               "creators/creating-jobs",
+              "creators/job-board",
               "creators/token-gated-jobs",
               "creators/jobs",
               "creators/disputes",
@@ -121,15 +132,15 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {

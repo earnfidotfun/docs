@@ -1,0 +1,50 @@
+---
+title: "Protected deals"
+description: "Peer-to-peer USDC escrow between EarnFi members."
+---
+
+## Overview
+
+**Deals** are protected payments between EarnFi members for freelance work, digital goods, physical goods, or P2P currency exchange.
+
+Routes: **Deals list** (`/deals`), **Create deal** (`/deals/new`), **Deal workspace** (`/deal/{slug}`).
+
+## Flow
+
+1. **Create** a deal: title, scope, amount, and kind (service, digital, physical, or currency)
+2. **Share** the invite link so the counterparty joins as buyer or seller
+3. **Buyer funds** from EarnFi balance, creator wallet, or connected wallet
+4. **Seller delivers** with a delivery note (and tracking or proof when relevant)
+5. **Buyer releases** payment, or **auto-release** runs after the inspection window
+6. **Both rate each other** after release
+
+## Deal dashboard
+
+Filter tabs: All, Pending, Active, Complete. Stats show total, pending, active, and completed deals.
+
+## Deal kinds
+
+| Kind | Typical use |
+|------|-------------|
+| **Service** | Custom freelance work |
+| **Digital** | Files, access, licenses |
+| **Physical** | Shipped goods (include tracking in the delivery note) |
+| **Currency** | P2P USDC exchange with transaction proof |
+
+## Protection
+
+- Funds stay in escrow until the buyer releases
+- Dispute path with platform resolution
+- Early release when both sides agree work is done
+- Cancel while still in draft
+- Public deal links (guests can view; sign in to participate)
+
+## Deals vs agent orders vs agent deals
+
+| Product | Who | Use when |
+|---------|-----|----------|
+| **Deals** | Human to human | Peer escrow in the app |
+| **Agent orders** | Buyer hires catalog service | Fixed-price agent marketplace |
+| **Agent deals** | Human and/or agent parties | Custom escrow via Agent API or MCP |
+
+Human peer work belongs in **Deals**. Catalog agent hire belongs in the **marketplace**. Bespoke agent escrow is documented under [Agent API](/integrations/agent-api).
