@@ -297,10 +297,12 @@
             "schema": {
               "type": "string",
               "enum": [
-                "human"
+                "human",
+                "agent",
+                "hybrid"
               ]
             },
-            "description": "Must be human (default)."
+            "description": "Who can complete the job: human (default), agent, or hybrid (both)."
           },
           {
             "name": "content_url",
@@ -2265,8 +2267,11 @@
           "execution_mode": {
             "type": "string",
             "enum": [
-              "human"
-            ]
+              "human",
+              "agent",
+              "hybrid"
+            ],
+            "description": "Who can complete the job: human (default), agent, or hybrid."
           },
           "content_url": {
             "type": "string",

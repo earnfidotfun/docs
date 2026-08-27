@@ -10,7 +10,7 @@ The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): dis
 - **Live spec:** `https://app.earnfi.fun/openapi-x402.json`  
 - **Docs copy:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json) (same schema, for offline reference)
 
-Paths are grouped by role: **discovery**, **paid creates**, **polling**, and **creator** tools. New jobs use **`execution_mode=human`**. Optional **token** and **verified-participant** rules appear on paid creates where the product supports them.
+Paths are grouped by role: **discovery**, **paid creates**, **polling**, and **creator** tools. Paid creates accept **`execution_mode`**: `human` (default), `agent`, or `hybrid`. Optional **token** and **verified-participant** rules appear on paid creates where the product supports them.
 
 ## Related
 
