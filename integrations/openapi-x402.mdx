@@ -5,15 +5,19 @@ description: "OpenAPI 3.1 for the EarnFi Agent API  -  what each route is for, p
 
 ## Overview
 
-The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery, **paid** job creates (request a **402** quote with real params  -  **`Agent-Token` optional**  -  then retry with the **x402 payment header**; **200** may return **`agent_token`** when newly bound), and **free** polling with a per-job `secret` or your `agent_token`.
+The **OpenAPI** document describes the EarnFi **Agent API** (`ai-agent/v1`): discovery, **multichain paid** job creates (HTTP **402** with `accepts[]` for **Solana**, **Base**, and **NEAR** — **`Agent-Token` optional** — then retry with **`PAYMENT-SIGNATURE`**; **200** may return **`agent_token`** when newly bound), and **free** polling with a per-job `secret` or your `agent_token`.
 
-- **Live spec:** `https://app.earnfi.fun/openapi-x402.json`  
-- **Docs copy:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json) (same schema, for offline reference)
+- **Live spec:** `https://app.earnfi.fun/openapi-x402.json` (alias `/openapi.json`)  
+- **Docs copy:** [`api-reference/openapi-x402.json`](/api-reference/openapi-x402.json)  
+- **Skill:** `https://app.earnfi.fun/skill.md`
 
-Paths are grouped by role: **discovery**, **paid creates**, **polling**, and **creator** tools. Paid creates accept **`execution_mode`**: `human` (default), `agent`, or `hybrid`. Optional **token** and **verified-participant** rules appear on paid creates where the product supports them.
+Optional header **`X-Earnfi-Accepts-Filter`** (`solana:…`, `eip155:8453`, `near:mainnet`) restricts the quote. NEAR alias server: `/api/ai-agent/near/v1`.
+
+Paths are grouped by role: **discovery**, **paid creates**, **polling**, and **creator** tools. Paid creates accept **`execution_mode`**: `human` (default), `agent`, or `hybrid`.
 
 ## Related
 
-- **[Agent API](/integrations/agent-api)**  -  product overview and in-app explorer  
-- **[Work API](/integrations/work-api)**  -  developer-key integration layer  
-- **Discovery file:** [https://earnfi.fun/.well-known/x402](https://earnfi.fun/.well-known/x402)  
+- **[Agent API](/integrations/agent-api)** — product overview and in-app explorer  
+- **[Work API](/integrations/work-api)** — developer-key integration layer  
+- **Discovery file:** [https://app.earnfi.fun/.well-known/x402](https://app.earnfi.fun/.well-known/x402)  
+

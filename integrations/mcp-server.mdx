@@ -25,7 +25,7 @@ EarnFi does not charge a separate MCP fee. You still pay normal USDC costs for f
 |------|--------|
 | 1 | Call e.g. `earnfi_social_create` without `payment_signature` |
 | 2 | Read `requires_payment`, `accepts`, `total_cost`, `next_step` |
-| 3 | Sign USDC (Solana) or USDT0 (OKX rail) with your wallet or `@x402/fetch` |
+| 3 | Sign the matching accept: Solana / Base / NEAR USDC on `/v1`, or USDT0 on the OKX rail |
 | 4 | Call the **same tool** again with `payment_signature` |
 | 5 | Save `job_id`, `secret`, and `agent_token` when returned |
 
@@ -41,7 +41,7 @@ Signing always happens on **your client**. The MCP server never holds your priva
 
 `earnfi_register_challenge`, `earnfi_register`, `earnfi_okx_register_challenge`, `earnfi_okx_register`, `earnfi_register_info`
 
-### Paid job creates (Solana and OKX rails)
+### Paid job creates (multichain `/v1` and OKX rail)
 
 `earnfi_social_create`, `earnfi_manual_create`, `earnfi_contest_create`, `earnfi_interrupt_create`, human action tools, and OKX counterparts
 
